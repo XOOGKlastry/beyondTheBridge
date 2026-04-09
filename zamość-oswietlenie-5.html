@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="light">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<title>UrbanLux · Zamość</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/MarkerCluster.Default.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg-0:#f0f2f8;--bg-1:#fff;--bg-2:#f5f7ff;--bg-3:#eaecf8;
+  --border:#d0d5e8;--border2:#b8c0dc;
+  --accent:#2563eb;--ag:rgba(37,99,235,.11);
+  --a2:#d97706;--a3:#059669;--a4:#dc2626;--a5:#7c3aed;
+  --t1:#111827;--t2:#4b5680;--t3:#9ca3af;
+  --sh:0 2px 12px rgba(0,0,0,.07);--sh2:0 8px 32px rgba(0,0,0,.13);
+  --hbg:rgba(255,255,255,.94);--card:#fff;--card2:#f8faff;
+  --fu:'Inter',sans-serif;--fd:'IBM Plex Mono',monospace;
+  --r:10px;--tr:.17s cubic-bezier(.4,0,.2,1);
+  --sw:332px;--hh:54px;--sbh:50px;
+}
+[data-theme="dark"]{
+  --bg-0:#0a0c10;--bg-1:#111420;--bg-2:#181c2e;--bg-3:#1f253d;
+  --border:#2a3050;--border2:#3a4270;
+  --accent:#3b82f6;--ag:rgba(59,130,246,.15);
+  --a2:#f59e0b;--a3:#10b981;--a4:#ef4444;--a5:#a855f7;
+  --t1:#e8eaf6;--t2:#8892b0;--t3:#4a5580;
+  --sh:0 4px 24px rgba(0,0,0,.5);--sh2:0 12px 40px rgba(0,0,0,.6);
+  --hbg:rgba(10,12,16,.95);--card:#111420;--card2:#181c2e;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:var(--fu);background:var(--bg-0);color:var(--t1);transition:background .25s,color .25s}
+
+/* HEADER */
+#header{position:fixed;top:0;left:0;right:0;height:var(--hh);background:var(--hbg);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:7px;padding:0 12px;z-index:1000;transition:background .25s,border-color .25s}
+.logo{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.logo-ic{width:29px;height:29px;border-radius:8px;background:linear-gradient(135deg,var(--accent),#6366f1);display:flex;align-items:center;justify-content:center;font-size:15px}
+.logo-t{font-size:14px;font-weight:700;letter-spacing:-.3px;color:var(--t1)}
+.logo-s{font-family:var(--fd);font-size:9px;color:var(--t2);margin-top:1px}
+.hsep{width:1px;height:22px;background:var(--border);margin:0 2px;flex-shrink:0}
+.hbtns{display:flex;align-items:center;gap:4px;flex:1;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+.hbtns::-webkit-scrollbar{display:none}
+.hbtn{height:29px;padding:0 10px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t2);font-family:var(--fu);font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:var(--tr);flex-shrink:0}
+.hbtn:hover{background:var(--bg-3);color:var(--t1);border-color:var(--border2)}
+.hbtn.active{background:var(--ag);color:var(--accent);border-color:var(--accent)}
+.hbtn.add{border-color:rgba(5,150,105,.4);color:var(--a3)}
+.hbtn.add:hover,.hbtn.add.active{background:rgba(5,150,105,.1);border-color:var(--a3);color:var(--a3)}
+.hbtn.warn{border-color:rgba(220,38,38,.35);color:var(--a4)}
+.hbtn.warn:hover,.hbtn.warn.active{background:rgba(220,38,38,.08);border-color:var(--a4);color:var(--a4)}
+.hdr{margin-left:auto;display:flex;align-items:center;gap:5px;flex-shrink:0}
+.ldot{width:7px;height:7px;border-radius:50%;background:var(--a3);box-shadow:0 0 6px var(--a3);animation:lp 2s infinite}
+@keyframes lp{0%,100%{opacity:1}50%{opacity:.3}}
+.ltxt{font-family:var(--fd);font-size:10px;color:var(--t2)}
+.ibtn{width:29px;height:29px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:var(--tr);flex-shrink:0}
+.ibtn:hover{background:var(--bg-3);border-color:var(--border2);color:var(--t1)}
+.ibtn.active{background:var(--ag);border-color:var(--accent);color:var(--accent)}
+
+/* SUMMARY */
+#summary{position:fixed;top:var(--hh);left:0;right:0;height:var(--sbh);background:var(--card);border-bottom:1px solid var(--border);display:flex;align-items:center;overflow-x:auto;z-index:999;scrollbar-width:none;transition:background .25s,border-color .25s;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+#summary::-webkit-scrollbar{display:none}
+.si{display:flex;align-items:center;gap:8px;padding:0 13px;border-right:1px solid var(--border);height:100%;min-width:fit-content;flex-shrink:0}
+.sdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.slbl{font-family:var(--fd);font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;white-space:nowrap}
+.sval{font-family:var(--fd);font-size:16px;font-weight:600;line-height:1}
+.smbar{width:36px;height:3px;background:var(--bg-3);border-radius:2px;margin-top:3px;overflow:hidden}
+.smbar-f{height:100%;border-radius:2px;transition:width .5s}
+
+/* APP */
+#app{position:fixed;top:calc(var(--hh)+var(--sbh));left:0;right:0;bottom:0;display:flex;overflow:hidden}
+
+/* SIDEBAR */
+#sidebar{width:var(--sw);background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;transition:transform var(--tr),width var(--tr),background .25s;z-index:100;flex-shrink:0;box-shadow:1px 0 6px rgba(0,0,0,.04)}
+#sidebar.collapsed{width:0;transform:translateX(-100%)}
+.sb-hd{padding:9px 12px 8px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
+.sb-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--t2)}
+.qbtns{display:flex;gap:4px}
+.qbtn{height:22px;padding:0 7px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t2);font-size:10px;font-weight:500;cursor:pointer;transition:var(--tr)}
+.qbtn:hover{border-color:var(--a4);color:var(--a4);background:rgba(220,38,38,.06)}
+.sb-body{flex:1;overflow-y:auto;padding:9px;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.fs{margin-bottom:10px}
+.flbl{font-family:var(--fd);font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.flbl::after{content:'';flex:1;height:1px;background:var(--border)}
+.chips{display:flex;flex-wrap:wrap;gap:3px}
+.chip{padding:3px 8px;border-radius:6px;border:1px solid var(--border);background:var(--bg-2);color:var(--t2);font-size:11px;font-weight:500;cursor:pointer;transition:var(--tr);user-select:none}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.on{background:var(--ag);border-color:var(--accent);color:var(--accent)}
+.chip.led.on{background:rgba(5,150,105,.09);border-color:var(--a3);color:var(--a3)}
+.chip.sod.on{background:rgba(217,119,6,.09);border-color:var(--a2);color:var(--a2)}
+.chip.bad.on{background:rgba(220,38,38,.09);border-color:var(--a4);color:var(--a4)}
+.rtrack{position:relative;height:4px;background:var(--bg-3);border-radius:2px;margin:9px 0}
+.rfill{position:absolute;height:100%;background:var(--accent);border-radius:2px}
+.rtrack input[type=range]{position:absolute;top:-7px;width:100%;height:18px;-webkit-appearance:none;background:transparent;pointer-events:none}
+.rtrack input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--accent);pointer-events:all;cursor:pointer;border:2px solid #fff;box-shadow:0 1px 5px rgba(0,0,0,.2)}
+.dsl-vals{display:flex;justify-content:space-between;margin-bottom:3px}
+.dsl-val{font-family:var(--fd);font-size:11px;color:var(--accent);font-weight:500}
+.sinput{width:100%;padding:7px 10px;background:var(--bg-2);border:1px solid var(--border);border-radius:var(--r);color:var(--t1);font-family:var(--fd);font-size:12px;outline:none;transition:var(--tr)}
+.sinput::placeholder{color:var(--t3)}
+.sinput:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--ag)}
+#lamp-list{display:flex;flex-direction:column;gap:4px}
+.lcard{background:var(--card2);border:1px solid var(--border);border-radius:9px;padding:8px 10px;cursor:pointer;transition:var(--tr)}
+.lcard:hover{border-color:var(--accent);transform:translateX(2px)}
+.lcard.sel{border-color:var(--accent);background:var(--ag)}
+.lcard.crit{border-left:3px solid var(--a4)}
+.lcard.new-lamp{border-left:3px solid var(--a3);border-style:dashed}
+.lc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px}
+.lc-id{font-family:var(--fd);font-size:10px;color:var(--t3)}
+.lc-st{width:7px;height:7px;border-radius:50%}
+.lc-name{font-size:12px;font-weight:500;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--t1)}
+.lc-meta{font-family:var(--fd);font-size:10px;color:var(--t2);display:flex;gap:5px;flex-wrap:wrap}
+
+/* MAP */
+#map-wrap{flex:1;position:relative;overflow:hidden;min-width:0}
+#map{position:absolute;top:0;left:0;right:0;bottom:0;background:var(--bg-0)}
+#map.add-mode{cursor:crosshair!important}
+#map.add-mode *{cursor:crosshair!important}
+@keyframes badping{0%{box-shadow:0 0 0 0 rgba(220,38,38,.7)}70%{box-shadow:0 0 0 10px rgba(220,38,38,0)}100%{box-shadow:0 0 0 0 rgba(220,38,38,0)}}
+.mbad{animation:badping 1.5s ease-out infinite}
+.marker-cluster-small,.marker-cluster-medium,.marker-cluster-large{background:rgba(37,99,235,.14)!important}
+.marker-cluster-small div,.marker-cluster-medium div,.marker-cluster-large div{background:rgba(37,99,235,.65)!important;color:#fff!important;font-weight:600!important;font-size:11px!important}
+
+/* BASEMAP TOGGLE BUTTON + PANEL */
+#bm-toggle{position:absolute;top:12px;left:12px;z-index:600;width:36px;height:36px;border-radius:9px;background:var(--card);border:1px solid var(--border);color:var(--t2);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--tr);box-shadow:var(--sh)}
+#bm-toggle:hover,#bm-toggle.active{border-color:var(--accent);color:var(--accent);background:var(--ag)}
+#bmp{position:absolute;top:56px;left:12px;z-index:599;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:7px;box-shadow:var(--sh2);display:none;min-width:200px}
+#bmp.open{display:block}
+.bml{font-family:var(--fd);font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;padding:0 3px}
+.bmbtn{display:flex;align-items:center;gap:8px;width:100%;padding:6px 9px;border-radius:7px;border:1px solid transparent;background:transparent;color:var(--t2);font-size:12px;font-weight:500;cursor:pointer;transition:var(--tr);text-align:left}
+.bmbtn:hover{background:var(--bg-3);color:var(--t1)}
+.bmbtn.active{background:var(--ag);border-color:var(--accent);color:var(--accent)}
+.bm-preview{width:22px;height:16px;border-radius:3px;border:1px solid var(--border);flex-shrink:0;background-size:cover}
+
+/* MAP CONTROLS */
+#mc{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:5px;z-index:500}
+.mcg{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh)}
+.mcb{width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;color:var(--t2);transition:var(--tr);border-bottom:1px solid var(--border)}
+.mcb:last-child{border-bottom:none}
+.mcb:hover{background:var(--bg-3);color:var(--t1)}
+
+/* LEGEND */
+#legend{position:absolute;bottom:60px;right:12px;z-index:500;background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;box-shadow:var(--sh);font-size:11px}
+.ltitle{font-family:var(--fd);font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
+.li{display:flex;align-items:center;gap:7px;margin-bottom:4px;color:var(--t2)}
+.li:last-child{margin-bottom:0}
+.ldot2{width:10px;height:10px;border-radius:50%;border:2px solid rgba(0,0,0,.1);flex-shrink:0}
+[data-theme="dark"] .ldot2{border-color:rgba(255,255,255,.1)}
+#stog{position:absolute;left:12px;bottom:16px;z-index:500;width:36px;height:36px;border-radius:9px;background:var(--card);border:1px solid var(--border);color:var(--t2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--tr);box-shadow:var(--sh)}
+#stog:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ADD-MODE TOOLTIP */
+#add-tooltip{position:absolute;top:56px;left:56px;z-index:600;background:var(--a3);color:#fff;padding:8px 14px;border-radius:9px;font-size:12px;font-weight:600;box-shadow:var(--sh2);display:none;pointer-events:none}
+#add-tooltip.show{display:block}
+
+/* LEAFLET */
+.leaflet-popup-content-wrapper{background:var(--card)!important;border:1px solid var(--border)!important;border-radius:10px!important;box-shadow:var(--sh2)!important;color:var(--t1)!important}
+.leaflet-popup-tip{background:var(--card)!important}
+.leaflet-popup-content{margin:11px 13px!important;font-family:var(--fu)!important}
+.pp-id{font-family:var(--fd);font-size:9px;color:var(--t3);margin-bottom:2px}
+.pp-name{font-size:13px;font-weight:600;margin-bottom:5px;color:var(--t1)}
+.pp-tags{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:7px}
+.pp-tag{padding:2px 6px;border-radius:5px;font-family:var(--fd);font-size:10px;border:1px solid;font-weight:500}
+.pp-btn{width:100%;padding:6px;border-radius:7px;border:1px solid var(--accent);background:var(--ag);color:var(--accent);font-size:11px;font-weight:600;cursor:pointer;transition:var(--tr)}
+.pp-btn:hover{background:var(--accent);color:#fff}
+.leaflet-control-attribution{background:rgba(255,255,255,.8)!important;font-size:9px!important}
+[data-theme="dark"] .leaflet-control-attribution{background:rgba(10,12,16,.7)!important;color:#4a5580!important}
+
+/* DASHBOARD */
+#dashboard{display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:var(--bg-0);overflow-y:auto;z-index:300;padding:15px;gap:12px}
+#dashboard.show{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr))}
+.dc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px;box-shadow:var(--sh)}
+.dc-t{font-family:var(--fd);font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:11px}
+.dc-ch{position:relative;height:165px;width:100%}
+.dc-ch canvas{position:absolute;top:0;left:0}
+.dtbl{width:100%;font-family:var(--fd);font-size:11px;border-collapse:collapse}
+.dtbl th{color:var(--t3);font-weight:500;text-align:left;padding:4px 7px;font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.dtbl td{padding:5px 7px;color:var(--t2);border-bottom:1px solid var(--border)}
+.dbar{height:3px;background:var(--accent);border-radius:2px;margin-top:2px}
+.plist{display:flex;flex-direction:column;gap:5px}
+.pitem{display:flex;align-items:center;gap:8px;padding:7px 9px;background:var(--card2);border-radius:8px;border:1px solid var(--border);cursor:pointer;transition:var(--tr)}
+.pitem:hover{border-color:var(--accent);background:var(--ag)}
+.pbadge{width:21px;height:21px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:10px;font-weight:600;flex-shrink:0}
+.pname{font-size:11px;font-weight:500;color:var(--t1)}
+.pmeta{font-family:var(--fd);font-size:9px;color:var(--t3)}
+
+/* BOTTOM TABLE */
+#bp{position:absolute;bottom:0;left:0;right:0;height:270px;background:var(--card);border-top:1px solid var(--border);z-index:400;display:flex;flex-direction:column;transition:transform var(--tr);box-shadow:0 -3px 14px rgba(0,0,0,.06)}
+#bp.hidden{transform:translateY(100%)}
+.bp-hd{display:flex;align-items:center;gap:7px;padding:7px 12px;border-bottom:1px solid var(--border);flex-shrink:0}
+.bp-title{font-family:var(--fd);font-size:11px;color:var(--t2);text-transform:uppercase;letter-spacing:.8px}
+.bp-count{font-family:var(--fd);font-size:11px;color:var(--accent);font-weight:600}
+.bp-acts{margin-left:auto;display:flex;gap:4px}
+.bpbtn{height:23px;padding:0 8px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t2);font-size:11px;font-weight:500;cursor:pointer;transition:var(--tr);display:flex;align-items:center;gap:4px}
+.bpbtn:hover{border-color:var(--a3);color:var(--a3);background:rgba(5,150,105,.07)}
+.bp-close{width:23px;height:23px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:var(--tr)}
+.bp-close:hover{border-color:var(--a4);color:var(--a4)}
+.tw{flex:1;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+table{width:100%;border-collapse:collapse;font-family:var(--fd);font-size:11px}
+thead th{position:sticky;top:0;background:var(--card2);padding:6px 10px;text-align:left;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.6px;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;font-size:10px}
+thead th:hover{color:var(--t1)}
+tbody tr{border-bottom:1px solid var(--border);transition:var(--tr);cursor:pointer}
+tbody tr:hover{background:var(--bg-3)!important}
+tbody tr.tsel{background:var(--ag)!important}
+tbody tr.rbad{background:rgba(220,38,38,.04)}
+tbody tr.rmid{background:rgba(217,119,6,.04)}
+tbody tr.rnew{background:rgba(5,150,105,.04)}
+tbody td{padding:5px 10px;color:var(--t2);white-space:nowrap}
+tbody td:first-child{color:var(--accent);font-weight:600}
+.tds{display:flex;align-items:center;gap:5px}
+.tdd{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+/* MODAL BASE */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);backdrop-filter:blur(4px);z-index:2000;display:flex;align-items:center;justify-content:center;padding:14px;opacity:0;pointer-events:none;transition:opacity var(--tr)}
+.overlay.open{opacity:1;pointer-events:all}
+.mcard{width:100%;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transform:translateY(14px);transition:transform var(--tr);box-shadow:var(--sh2)}
+.overlay.open .mcard{transform:translateY(0)}
+
+/* DETAIL MODAL */
+#mo{z-index:2000}
+#modal{max-width:600px;max-height:92vh}
+.mimg{width:100%;height:150px;display:flex;align-items:center;justify-content:center;font-size:38px;color:var(--t3);flex-shrink:0;position:relative;overflow:hidden;background:linear-gradient(135deg,var(--bg-2),var(--bg-3))}
+.mimg img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.mtabs{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--card2);overflow-x:auto;scrollbar-width:none}
+.mtab{flex-shrink:0;padding:9px 13px;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer;border:none;background:transparent;border-bottom:2px solid transparent;transition:var(--tr)}
+.mtab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.mclose{margin-left:auto;width:28px;height:28px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:var(--tr);flex-shrink:0;align-self:center;margin-right:8px}
+.mclose:hover{border-color:var(--a4);color:var(--a4)}
+.mpane{display:none;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.mpane.active{display:block}
+/* INFO */
+.mbody{padding:14px}
+.mtop{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:11px}
+.mid-txt{font-family:var(--fd);font-size:10px;color:var(--t3);margin-bottom:2px}
+.mname{font-size:16px;font-weight:700;color:var(--t1)}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+.mf{background:var(--bg-2);border:1px solid var(--border);border-radius:8px;padding:8px 10px}
+.mfl{font-family:var(--fd);font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px}
+.mfv{font-family:var(--fd);font-size:13px;font-weight:600;color:var(--t1)}
+.mnotes{background:var(--bg-2);border:1px solid var(--border);border-radius:8px;padding:9px;margin-bottom:10px;font-size:12px;color:var(--t2);line-height:1.6}
+.macts{display:flex;gap:5px;flex-wrap:wrap}
+.mbtn{flex:1;min-width:65px;padding:7px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--t2);font-size:11px;font-weight:500;cursor:pointer;transition:var(--tr);display:flex;align-items:center;justify-content:center;gap:4px}
+.mbtn:hover{border-color:var(--accent);color:var(--accent);background:var(--ag)}
+.mbtn.danger:hover{border-color:var(--a4);color:var(--a4);background:rgba(220,38,38,.07)}
+
+/* STREET VIEW PANE */
+#sv-pane{display:none;flex-direction:column;min-height:320px}
+#sv-pane.active{display:flex}
+.sv-inner{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--bg-2);padding:20px;gap:14px;min-height:240px}
+.sv-preview{width:100%;max-width:500px;border-radius:10px;overflow:hidden;border:1px solid var(--border);box-shadow:var(--sh);position:relative;background:var(--bg-3)}
+.sv-preview img{width:100%;height:220px;object-fit:cover;display:block}
+.sv-preview .sv-no-img{height:160px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--t3);font-size:13px}
+.sv-coords{font-family:var(--fd);font-size:11px;color:var(--t2)}
+.sv-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.sv-btn{padding:9px 16px;border-radius:9px;border:none;font-size:12px;font-weight:600;cursor:pointer;transition:var(--tr);display:flex;align-items:center;gap:6px;text-decoration:none}
+.sv-btn.primary{background:var(--accent);color:#fff}
+.sv-btn.primary:hover{opacity:.88}
+.sv-btn.secondary{background:transparent;border:1px solid var(--border);color:var(--t2)}
+.sv-btn.secondary:hover{border-color:var(--accent);color:var(--accent);background:var(--ag)}
+
+/* EDIT PANE */
+#edit-pane{display:none;flex-direction:column;padding:13px;gap:9px}
+#edit-pane.active{display:flex}
+.edit-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.edit-field{display:flex;flex-direction:column;gap:3px}
+.edit-field.full{grid-column:1/-1}
+.edit-lbl{font-family:var(--fd);font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.7px}
+.edit-input,.edit-select{padding:7px 9px;background:var(--bg-2);border:1px solid var(--border);border-radius:7px;color:var(--t1);font-family:var(--fd);font-size:12px;outline:none;transition:var(--tr);width:100%}
+.edit-input:focus,.edit-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--ag)}
+.edit-footer{display:flex;gap:7px;margin-top:4px}
+.edit-save{flex:2;padding:9px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:var(--tr)}
+.edit-save:hover{opacity:.88}
+.edit-del{flex:1;padding:9px;border-radius:8px;border:1px solid rgba(220,38,38,.4);background:transparent;color:var(--a4);font-size:12px;cursor:pointer;transition:var(--tr)}
+.edit-del:hover{background:rgba(220,38,38,.08);border-color:var(--a4)}
+.edit-status{font-family:var(--fd);font-size:11px;color:var(--a3);text-align:center;padding:5px;display:none;font-weight:500}
+
+/* USTERKA PANE */
+#usterka-pane{display:none;flex-direction:column;padding:13px;gap:8px}
+#usterka-pane.active{display:flex}
+.ulbl{font-family:var(--fd);font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
+.uchips{display:flex;flex-wrap:wrap;gap:4px}
+.uchip{padding:4px 9px;border-radius:6px;border:1px solid var(--border);background:var(--bg-2);color:var(--t2);font-size:11px;cursor:pointer;transition:var(--tr);font-weight:500}
+.uchip.on{background:rgba(220,38,38,.09);border-color:var(--a4);color:var(--a4)}
+.uta{width:100%;padding:8px 10px;background:var(--bg-2);border:1px solid var(--border);border-radius:8px;color:var(--t1);font-family:var(--fu);font-size:12px;resize:none;height:68px;outline:none;transition:var(--tr)}
+.uta:focus{border-color:var(--a4);box-shadow:0 0 0 3px rgba(220,38,38,.08)}
+.upbtn{width:100%;padding:8px;border-radius:8px;border:1px dashed var(--border);background:transparent;color:var(--t2);font-size:12px;cursor:pointer;transition:var(--tr);display:flex;align-items:center;justify-content:center;gap:7px}
+.upbtn:hover{border-color:var(--accent);color:var(--accent)}
+.usubmit{width:100%;padding:9px;border-radius:8px;border:none;background:var(--a4);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:var(--tr)}
+.usubmit:hover{background:#b91c1c}
+
+/* EXPORT / REPORT PANEL */
+#export-panel{position:absolute;bottom:70px;left:50%;transform:translateX(-50%);z-index:600;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;box-shadow:var(--sh2);display:none;min-width:280px}
+#export-panel.open{display:block}
+.exp-title{font-family:var(--fd);font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.exp-btn{width:100%;padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--t1);font-size:12px;font-weight:500;cursor:pointer;transition:var(--tr);display:flex;align-items:center;gap:9px;text-align:left;margin-bottom:5px}
+.exp-btn:last-child{margin-bottom:0}
+.exp-btn:hover{border-color:var(--accent);background:var(--ag);color:var(--accent)}
+.exp-btn .exp-ic{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.exp-btn-t{font-size:12px;font-weight:600}
+.exp-btn-s{font-size:10px;color:var(--t3)}
+
+/* ADD POINT MODAL */
+#add-modal-overlay{z-index:2500}
+#add-modal{max-width:440px}
+.add-hd{padding:14px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;flex-shrink:0}
+.add-hd-ic{width:30px;height:30px;border-radius:8px;background:rgba(5,150,105,.12);border:1px solid rgba(5,150,105,.3);display:flex;align-items:center;justify-content:center;font-size:15px}
+.add-form{padding:13px;display:flex;flex-direction:column;gap:7px;overflow-y:auto;max-height:60vh}
+.add-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.add-footer{padding:10px 13px;border-top:1px solid var(--border);display:flex;gap:7px;flex-shrink:0}
+.add-cancel{flex:1;padding:9px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--t2);font-size:12px;cursor:pointer;transition:var(--tr)}
+.add-save{flex:2;padding:9px;border-radius:8px;border:none;background:var(--a3);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:var(--tr)}
+.add-save:hover{opacity:.88}
+
+/* THEME EDITOR */
+#te-panel{position:fixed;right:0;top:var(--hh);bottom:0;width:300px;background:var(--card);border-left:1px solid var(--border);z-index:800;display:flex;flex-direction:column;transform:translateX(100%);transition:transform var(--tr);box-shadow:-4px 0 20px rgba(0,0,0,.08)}
+#te-panel.open{transform:translateX(0)}
+.te-hd{padding:12px 13px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.te-title{font-size:13px;font-weight:600;color:var(--t1)}
+.te-sub{font-family:var(--fd);font-size:10px;color:var(--t3)}
+.te-body{flex:1;overflow-y:auto;padding:11px;display:flex;flex-direction:column;gap:13px;scrollbar-width:thin}
+.te-section{display:flex;flex-direction:column;gap:7px}
+.te-slbl{font-family:var(--fd);font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;gap:5px}
+.te-slbl::after{content:'';flex:1;height:1px;background:var(--border)}
+.theme-cards{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.theme-card{padding:8px 9px;border-radius:9px;border:2px solid var(--border);cursor:pointer;transition:var(--tr)}
+.theme-card:hover{border-color:var(--border2)}
+.theme-card.active{border-color:var(--accent)}
+.tc-preview{height:26px;border-radius:5px;display:flex;gap:2px;overflow:hidden;margin-bottom:4px}
+.tc-sw{flex:1;border-radius:2px}
+.tc-label{font-size:11px;font-weight:500;color:var(--t1)}
+.accent-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+.accent-sw{width:100%;aspect-ratio:1;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:var(--tr)}
+.accent-sw:hover{transform:scale(1.1)}
+.accent-sw.active{border-color:var(--t1)}
+.te-row{display:flex;align-items:center;gap:8px}
+.te-row-lbl{font-size:11px;color:var(--t2);white-space:nowrap;flex-shrink:0;min-width:90px}
+.te-row-val{font-family:var(--fd);font-size:11px;color:var(--accent);min-width:34px;text-align:right}
+.te-slider{flex:1;-webkit-appearance:none;height:4px;border-radius:2px;background:var(--bg-3);outline:none;cursor:pointer}
+.te-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.te-toggle-row{display:flex;align-items:center;justify-content:space-between}
+.te-toggle-lbl{font-size:12px;color:var(--t2)}
+.toggle{width:34px;height:19px;border-radius:10px;background:var(--border);cursor:pointer;position:relative;transition:var(--tr);border:none;flex-shrink:0}
+.toggle.on{background:var(--accent)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:13px;height:13px;border-radius:50%;background:#fff;transition:var(--tr)}
+.toggle.on::after{left:18px}
+.font-btns{display:flex;gap:4px}
+.font-btn{flex:1;padding:5px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--t2);font-size:11px;cursor:pointer;transition:var(--tr);text-align:center}
+.font-btn:hover{border-color:var(--border2);color:var(--t1)}
+.font-btn.active{border-color:var(--accent);color:var(--accent);background:var(--ag)}
+.te-footer{padding:9px 11px;border-top:1px solid var(--border);display:flex;gap:6px;flex-shrink:0}
+.te-reset{flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--t2);font-size:11px;cursor:pointer;transition:var(--tr)}
+.te-reset:hover{border-color:var(--a4);color:var(--a4)}
+.te-save{flex:2;padding:8px;border-radius:8px;border:none;background:var(--accent);color:#fff;font-size:12px;font-weight:600;cursor:pointer}
+
+/* TOAST */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(55px);background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px 14px;font-size:12px;color:var(--t1);z-index:9999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;box-shadow:var(--sh2)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+@media(max-width:768px){
+  :root{--sw:100vw}
+  #sidebar{position:fixed;bottom:0;left:0;right:0;width:100%;height:60vh;z-index:600;border-right:none;border-top:1px solid var(--border);border-radius:18px 18px 0 0;transform:translateY(100%)}
+  #sidebar.open{transform:translateY(0);width:100%}
+  #sidebar.collapsed{transform:translateY(100%);width:100%}
+  #te-panel{width:100%}
+  .mgrid,.edit-grid,.add-grid{grid-template-columns:1fr}
+  .edit-field.full{grid-column:1}
+  #bmp,#legend{display:none!important}
+  .logo-s,.ltxt{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header id="header">
+  <div class="logo">
+    <div class="logo-ic">💡</div>
+    <div><div class="logo-t">UrbanLux</div><div class="logo-s">ZAMOŚĆ · OŚWIETLENIE</div></div>
+  </div>
+  <div class="hsep"></div>
+  <div class="hbtns">
+    <button class="hbtn active" id="btn-map" onclick="setVM('map')">🗺️ Mapa</button>
+    <button class="hbtn" id="btn-dash" onclick="setVM('dashboard')">📊 Dashboard</button>
+    <button class="hbtn" id="btn-tbl" onclick="togglePanel()">📋 Tabela</button>
+    <button class="hbtn" id="btn-flt" onclick="toggleSB()">⚙️ Filtry</button>
+    <button class="hbtn add" id="btn-add" onclick="toggleAddMode()">➕ Dodaj punkt</button>
+    <button class="hbtn warn" id="btn-wy" onclick="filterWy()">🔴 Do wymiany</button>
+  </div>
+  <div class="hdr">
+    <div class="ldot"></div><div class="ltxt">LIVE · 2025</div>
+    <div class="hsep"></div>
+    <button class="ibtn" id="export-btn" onclick="toggleExportPanel()" title="Eksport i raporty">📥</button>
+    <button class="ibtn" id="theme-btn" onclick="quickToggleTheme()" title="Motyw jasny/ciemny">☀️</button>
+    <button class="ibtn" id="te-btn" onclick="toggleTE()" title="Edytor wyglądu">🎨</button>
+  </div>
+</header>
+
+<!-- SUMMARY -->
+<div id="summary">
+  <div class="si"><div class="sdot" style="background:var(--accent)"></div><div><div class="slbl">Wszystkich</div><div class="sval" id="st" style="color:var(--accent)">—</div></div></div>
+  <div class="si"><div class="sdot" style="background:var(--a3)"></div><div><div class="slbl">LED</div><div class="sval" id="sl" style="color:var(--a3)">—</div><div class="smbar"><div class="smbar-f" id="sb-l" style="background:var(--a3)"></div></div></div></div>
+  <div class="si"><div class="sdot" style="background:var(--a2)"></div><div><div class="slbl">Sodowe</div><div class="sval" id="ss" style="color:var(--a2)">—</div><div class="smbar"><div class="smbar-f" id="sb-s" style="background:var(--a2)"></div></div></div></div>
+  <div class="si"><div class="sdot" style="background:var(--a4)"></div><div><div class="slbl">Złe</div><div class="sval" id="sb" style="color:var(--a4)">—</div><div class="smbar"><div class="smbar-f" id="sb-b" style="background:var(--a4)"></div></div></div></div>
+  <div class="si"><div class="sdot" style="background:var(--a5)"></div><div><div class="slbl">Moc łączna</div><div class="sval" id="sw" style="color:var(--a5)">—</div></div></div>
+  <div class="si"><div class="sdot" style="background:#0891b2"></div><div><div class="slbl">Nowe punkty</div><div class="sval" id="sn" style="color:#0891b2">—</div></div></div>
+  <div class="si"><div class="sdot" style="background:#06b6d4"></div><div><div class="slbl">Widoczne</div><div class="sval" id="sf" style="color:#06b6d4">—</div></div></div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div id="sidebar">
+    <div class="sb-hd">
+      <div class="sb-title">⚙ Filtry</div>
+      <div class="qbtns"><button class="qbtn" onclick="resetF()">↺ Reset</button><button class="qbtn" onclick="filterWy()">🔴 Wymiana</button></div>
+    </div>
+    <div class="sb-body">
+      <div class="fs"><div class="flbl">Szukaj</div><input class="sinput" id="search" placeholder="Ulica, ID, producent..." oninput="applyF()"/></div>
+      <div class="fs"><div class="flbl">Typ źródła</div><div class="chips">
+        <div class="chip led" data-f="type" data-v="LED" onclick="tChip(this)">💚 LED</div>
+        <div class="chip sod" data-f="type" data-v="Sodowa" onclick="tChip(this)">🟡 Sodowa</div>
+        <div class="chip" data-f="type" data-v="Rtęciowa" onclick="tChip(this)">⚪ Rtęciowa</div>
+        <div class="chip" data-f="type" data-v="Halogenowa" onclick="tChip(this)">🟠 Halogenowa</div>
+      </div></div>
+      <div class="fs"><div class="flbl">Stan</div><div class="chips">
+        <div class="chip" data-f="cond" data-v="Dobry" onclick="tChip(this)">✅ Dobry</div>
+        <div class="chip" data-f="cond" data-v="Średni" onclick="tChip(this)">⚠️ Średni</div>
+        <div class="chip bad" data-f="cond" data-v="Zły" onclick="tChip(this)">❌ Zły</div>
+      </div></div>
+      <div class="fs"><div class="flbl">Dzielnica</div><div class="chips">
+        <div class="chip" data-f="dist" data-v="Centrum" onclick="tChip(this)">Centrum</div>
+        <div class="chip" data-f="dist" data-v="Starówka" onclick="tChip(this)">Starówka</div>
+        <div class="chip" data-f="dist" data-v="Nowe Miasto" onclick="tChip(this)">Nowe Miasto</div>
+        <div class="chip" data-f="dist" data-v="Karolówka" onclick="tChip(this)">Karolówka</div>
+        <div class="chip" data-f="dist" data-v="Majdan Hetmański" onclick="tChip(this)">Majdan</div>
+      </div></div>
+      <div class="fs"><div class="flbl">Moc [W]</div>
+        <div class="dsl-vals"><span class="dsl-val" id="pn-l">0W</span><span class="dsl-val" id="px-l">250W</span></div>
+        <div class="rtrack"><div class="rfill" id="pf"></div><input type="range" id="pn" min="0" max="250" value="0" oninput="uDS('p')"/><input type="range" id="px" min="0" max="250" value="250" oninput="uDS('p')"/></div>
+      </div>
+      <div class="fs"><div class="flbl">Rok montażu</div>
+        <div class="dsl-vals"><span class="dsl-val" id="yn-l">1998</span><span class="dsl-val" id="yx-l">2023</span></div>
+        <div class="rtrack"><div class="rfill" id="yf"></div><input type="range" id="yn" min="1998" max="2023" value="1998" oninput="uDS('y')"/><input type="range" id="yx" min="1998" max="2023" value="2023" oninput="uDS('y')"/></div>
+      </div>
+      <div class="flbl" style="margin:10px 0 6px">Lista lamp (<span id="lc">0</span>)</div>
+      <div id="lamp-list"></div>
+    </div>
+  </div>
+
+  <div id="map-wrap">
+    <!-- DASHBOARD -->
+    <div id="dashboard">
+      <div class="dc"><div class="dc-t">Typy źródeł</div><div class="dc-ch"><canvas id="cht" width="100" height="165"></canvas></div></div>
+      <div class="dc"><div class="dc-t">Stan techniczny</div><div class="dc-ch"><canvas id="chc" width="100" height="165"></canvas></div></div>
+      <div class="dc"><div class="dc-t">Rozkład mocy</div><div class="dc-ch"><canvas id="chp" width="100" height="165"></canvas></div></div>
+      <div class="dc"><div class="dc-t">Statystyki dzielnic</div><table class="dtbl" id="dtbl"></table></div>
+      <div class="dc" style="grid-column:1/-1"><div class="dc-t">🔴 Priorytety wymiany</div><div class="plist" id="plist"></div></div>
+    </div>
+
+    <!-- BASEMAP TOGGLE -->
+    <button id="bm-toggle" onclick="toggleBM()" title="Zmień podkład mapowy">🗺</button>
+    <div id="bmp">
+      <div class="bml">Wybierz podkład mapowy</div>
+      <button class="bmbtn" onclick="setBM('light',this)"><div class="bm-preview" style="background:linear-gradient(135deg,#f0f2f8,#fff)"></div><div><div>☀️ Jasna (CartoDB)</div></div></button>
+      <button class="bmbtn active" onclick="setBM('voyager',this)"><div class="bm-preview" style="background:linear-gradient(135deg,#e8e8e8,#ddd)"></div><div><div>🧭 Voyager (CartoDB)</div></div></button>
+      <button class="bmbtn" onclick="setBM('dark',this)"><div class="bm-preview" style="background:linear-gradient(135deg,#111,#222)"></div><div><div>🌑 Dark (CartoDB)</div></div></button>
+      <button class="bmbtn" onclick="setBM('sat',this)"><div class="bm-preview" style="background:linear-gradient(135deg,#2d5a1b,#1a3a60)"></div><div><div>🛰 Satelita (Esri)</div></div></button>
+      <button class="bmbtn" onclick="setBM('topo',this)"><div class="bm-preview" style="background:linear-gradient(135deg,#c8deb8,#b8c8a0)"></div><div><div>⛰ Topografia</div></div></button>
+    </div>
+
+    <!-- MAP CONTROLS -->
+    <div id="mc">
+      <div class="mcg">
+        <div class="mcb" onclick="map.zoomIn()">＋</div>
+        <div class="mcb" onclick="map.zoomOut()">－</div>
+      </div>
+      <div class="mcg">
+        <div class="mcb" onclick="fitAll()" title="Wszystkie punkty">⊡</div>
+        <div class="mcb" onclick="geo()" title="Moja lokalizacja">◎</div>
+      </div>
+    </div>
+
+    <!-- LEGEND -->
+    <div id="legend">
+      <div class="ltitle">Legenda</div>
+      <div class="li"><div class="ldot2" style="background:#059669"></div>LED</div>
+      <div class="li"><div class="ldot2" style="background:#d97706"></div>Sodowa</div>
+      <div class="li"><div class="ldot2" style="background:#94a3b8"></div>Rtęciowa</div>
+      <div class="li"><div class="ldot2" style="background:#f97316"></div>Halogenowa</div>
+      <div style="height:4px;border-top:1px solid var(--border);margin:5px 0"></div>
+      <div class="li"><div style="width:10px;height:10px;border-radius:50%;background:rgba(220,38,38,.25);border:2px solid #dc2626;animation:badping 1.5s ease-out infinite;flex-shrink:0"></div>Stan zły</div>
+      <div class="li"><div class="ldot2" style="background:#059669;border-style:dashed;border-color:#059669"></div>Nowy punkt</div>
+    </div>
+
+    <div id="stog" onclick="toggleSB()">☰</div>
+    <div id="add-tooltip">📍 Kliknij na mapie aby dodać punkt — ESC aby anulować</div>
+    <div id="map"></div>
+
+    <!-- EXPORT PANEL -->
+    <div id="export-panel">
+      <div class="exp-title">
+        <span>📥 Eksport i raporty</span>
+        <button onclick="toggleExportPanel()" style="background:none;border:none;color:var(--t3);cursor:pointer;font-size:14px">✕</button>
+      </div>
+      <button class="exp-btn" onclick="exportCSV()">
+        <div class="exp-ic" style="background:rgba(5,150,105,.1)">📊</div>
+        <div><div class="exp-btn-t">Eksport CSV</div><div class="exp-btn-s">Wszystkie lampy z edycjami i nowymi punktami</div></div>
+      </button>
+      <button class="exp-btn" onclick="exportGeoJSON()">
+        <div class="exp-ic" style="background:rgba(37,99,235,.1)">🌐</div>
+        <div><div class="exp-btn-t">Eksport GeoJSON</div><div class="exp-btn-s">Format GIS, QGIS i inne</div></div>
+      </button>
+      <button class="exp-btn" onclick="generateUsterkaReport()">
+        <div class="exp-ic" style="background:rgba(220,38,38,.1)">📋</div>
+        <div><div class="exp-btn-t">Raport usterek</div><div class="exp-btn-s">Lista zgłoszeń z danymi lamp</div></div>
+      </button>
+      <button class="exp-btn" onclick="generateChangesReport()">
+        <div class="exp-ic" style="background:rgba(124,58,237,.1)">📝</div>
+        <div><div class="exp-btn-t">Raport zmian</div><div class="exp-btn-s">Edycje, nowe punkty, usunięte</div></div>
+      </button>
+    </div>
+
+    <!-- TABLE -->
+    <div id="bp" class="hidden">
+      <div class="bp-hd">
+        <span class="bp-title">📋 Tabela</span>
+        <span class="bp-count" id="tc2"></span>
+        <div class="bp-acts">
+          <button class="bpbtn" onclick="exportCSV()">⬇ CSV</button>
+          <button class="bpbtn" onclick="exportGeoJSON()">🌐 GeoJSON</button>
+        </div>
+        <button class="bp-close" onclick="togglePanel()">✕</button>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th onclick="sT('id')">ID ⇅</th><th onclick="sT('street')">Ulica ⇅</th>
+            <th onclick="sT('type')">Typ ⇅</th><th onclick="sT('power')">Moc ⇅</th>
+            <th onclick="sT('condition')">Stan ⇅</th><th onclick="sT('district')">Dzielnica ⇅</th>
+            <th onclick="sT('year')">Rok ⇅</th><th onclick="sT('manufacturer')">Producent ⇅</th>
+            <th>Status</th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="mo" onclick="closeMo(event)">
+  <div class="mcard" id="modal">
+    <div class="mimg" id="mimg"><span id="memoji">💡</span></div>
+    <div class="mtabs">
+      <button class="mtab active" onclick="setMTab('info',this)">ℹ️ Info</button>
+      <button class="mtab" onclick="setMTab('sv',this)">📸 Street View</button>
+      <button class="mtab" onclick="setMTab('edit',this)">✏️ Edytuj</button>
+      <button class="mtab" onclick="setMTab('usterka',this)">⚠️ Usterka</button>
+      <button class="mclose" onclick="document.getElementById('mo').classList.remove('open')">✕</button>
+    </div>
+    <!-- INFO PANE -->
+    <div class="mpane active" id="info-pane">
+      <div class="mbody">
+        <div class="mtop"><div><div class="mid-txt" id="mid"></div><div class="mname" id="mname"></div></div></div>
+        <div class="mgrid" id="mgrid"></div>
+        <div class="mnotes" id="mnotes"></div>
+        <div class="macts">
+          <button class="mbtn" id="m-photo">📷 Zdjęcie</button>
+          <button class="mbtn" id="m-nav">🧭 Nawiguj</button>
+          <button class="mbtn" onclick="setMTab('sv',document.querySelector('.mtab:nth-child(2)'))">📸 Street View</button>
+          <button class="mbtn danger" onclick="setMTab('usterka',document.querySelector('.mtab:nth-child(4)'))">⚠ Usterka</button>
+        </div>
+      </div>
+    </div>
+    <!-- STREET VIEW PANE -->
+    <div class="mpane" id="sv-pane">
+      <div class="sv-inner">
+        <div class="sv-preview" id="sv-preview">
+          <img id="sv-img" src="" alt="Street View" onerror="svImgError()"/>
+          <div class="sv-no-img" id="sv-fallback" style="display:none">
+            <span style="font-size:32px">🏙️</span>
+            <span>Brak zdjęcia Street View dla tej lokalizacji</span>
+            <span style="font-family:var(--fd);font-size:10px;color:var(--t3)" id="sv-coords-fb"></span>
+          </div>
+        </div>
+        <div class="sv-coords" id="sv-coords"></div>
+        <div class="sv-btns">
+          <a class="sv-btn primary" id="sv-gsv-link" href="#" target="_blank">🚶 Otwórz Google Street View</a>
+          <a class="sv-btn secondary" id="sv-maps-link" href="#" target="_blank">🗺 Google Maps</a>
+          <button class="sv-btn secondary" onclick="svNextAngle()">🔄 Inny kąt</button>
+        </div>
+      </div>
+    </div>
+    <!-- EDIT PANE -->
+    <div class="mpane" id="edit-pane">
+      <div class="edit-grid">
+        <div class="edit-field"><div class="edit-lbl">Ulica</div><input class="edit-input" id="e-street"/></div>
+        <div class="edit-field"><div class="edit-lbl">Typ</div><select class="edit-select" id="e-type"><option>LED</option><option>Sodowa</option><option>Rtęciowa</option><option>Halogenowa</option></select></div>
+        <div class="edit-field"><div class="edit-lbl">Moc [W]</div><input class="edit-input" id="e-power" type="number"/></div>
+        <div class="edit-field"><div class="edit-lbl">Wysokość [m]</div><input class="edit-input" id="e-height" type="number" step="0.5"/></div>
+        <div class="edit-field"><div class="edit-lbl">Rok montażu</div><input class="edit-input" id="e-year" type="number"/></div>
+        <div class="edit-field"><div class="edit-lbl">Producent</div><input class="edit-input" id="e-manufacturer"/></div>
+        <div class="edit-field"><div class="edit-lbl">Stan techniczny</div><select class="edit-select" id="e-condition"><option>Dobry</option><option>Średni</option><option>Zły</option></select></div>
+        <div class="edit-field"><div class="edit-lbl">Dzielnica</div><select class="edit-select" id="e-district"><option>Centrum</option><option>Starówka</option><option>Nowe Miasto</option><option>Karolówka</option><option>Majdan Hetmański</option></select></div>
+        <div class="edit-field full"><div class="edit-lbl">Notatki</div><textarea class="edit-input" id="e-notes" rows="3" style="resize:vertical"></textarea></div>
+      </div>
+      <div class="edit-status" id="edit-status">✅ Zmiany zapisane pomyślnie</div>
+      <div class="edit-footer">
+        <button class="edit-del" onclick="deleteLamp()">🗑 Usuń punkt</button>
+        <button class="edit-save" onclick="saveEdit()">💾 Zapisz zmiany</button>
+      </div>
+    </div>
+    <!-- USTERKA PANE -->
+    <div class="mpane" id="usterka-pane">
+      <div><div class="ulbl">Typ usterki</div><div class="uchips">
+        <div class="uchip" onclick="tUC(this)">Nie świeci</div>
+        <div class="uchip" onclick="tUC(this)">Migocze</div>
+        <div class="uchip" onclick="tUC(this)">Uszkodzony słup</div>
+        <div class="uchip" onclick="tUC(this)">Wandalizm</div>
+        <div class="uchip" onclick="tUC(this)">Świeci w dzień</div>
+        <div class="uchip" onclick="tUC(this)">Inne</div>
+      </div></div>
+      <div><div class="ulbl">Opis</div><textarea class="uta" id="u-desc" placeholder="Opisz usterkę..."></textarea></div>
+      <label class="upbtn">📷 Zdjęcie z aparatu<input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleUP(this)"/></label>
+      <div id="u-prev" style="display:none;font-family:var(--fd);font-size:10px;color:var(--a3)"></div>
+      <button class="usubmit" onclick="submitU()">📤 Wyślij zgłoszenie usterki</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD POINT MODAL -->
+<div class="overlay" id="add-modal-overlay" onclick="closeAddModal(event)">
+  <div class="mcard" id="add-modal">
+    <div class="add-hd">
+      <div class="add-hd-ic">➕</div>
+      <div><div style="font-size:14px;font-weight:600;color:var(--t1)">Nowy punkt świetlny</div><div style="font-family:var(--fd);font-size:10px;color:var(--t3)" id="add-coords-lbl">—</div></div>
+      <button class="mclose" style="margin-left:auto" onclick="closeAddModal()">✕</button>
+    </div>
+    <div class="add-form">
+      <div class="add-grid">
+        <div class="edit-field full"><div class="edit-lbl">Ulica / Opis lokalizacji</div><input class="edit-input" id="a-street" placeholder="np. ul. Nowa 15"/></div>
+        <div class="edit-field"><div class="edit-lbl">Typ</div><select class="edit-select" id="a-type"><option>LED</option><option>Sodowa</option><option>Rtęciowa</option><option>Halogenowa</option></select></div>
+        <div class="edit-field"><div class="edit-lbl">Moc [W]</div><input class="edit-input" id="a-power" type="number" value="72"/></div>
+        <div class="edit-field"><div class="edit-lbl">Wysokość [m]</div><input class="edit-input" id="a-height" type="number" value="8" step="0.5"/></div>
+        <div class="edit-field"><div class="edit-lbl">Rok</div><input class="edit-input" id="a-year" type="number" value="2025"/></div>
+        <div class="edit-field"><div class="edit-lbl">Producent</div><input class="edit-input" id="a-manufacturer" value="Nieznany"/></div>
+        <div class="edit-field"><div class="edit-lbl">Stan</div><select class="edit-select" id="a-condition"><option>Dobry</option><option>Średni</option><option>Zły</option></select></div>
+        <div class="edit-field"><div class="edit-lbl">Dzielnica</div><select class="edit-select" id="a-district"><option>Centrum</option><option>Starówka</option><option>Nowe Miasto</option><option>Karolówka</option><option>Majdan Hetmański</option></select></div>
+        <div class="edit-field full"><div class="edit-lbl">Notatki</div><textarea class="edit-input" id="a-notes" rows="2" placeholder="Uwagi dot. instalacji..."></textarea></div>
+      </div>
+    </div>
+    <div class="add-footer">
+      <button class="add-cancel" onclick="closeAddModal()">Anuluj</button>
+      <button class="add-save" onclick="confirmAddPoint()">✅ Dodaj punkt na mapie</button>
+    </div>
+  </div>
+</div>
+
+<!-- THEME EDITOR -->
+<div id="te-panel">
+  <div class="te-hd">
+    <div><div class="te-title">🎨 Edytor wyglądu</div><div class="te-sub">Zapis w przeglądarce</div></div>
+    <button class="ibtn" onclick="toggleTE()">✕</button>
+  </div>
+  <div class="te-body">
+    <div class="te-section">
+      <div class="te-slbl">Motyw bazowy</div>
+      <div class="theme-cards">
+        <div class="theme-card active" id="tc-light" onclick="applyTheme('light')"><div class="tc-preview"><div class="tc-sw" style="background:#f0f2f8"></div><div class="tc-sw" style="background:#fff"></div><div class="tc-sw" style="background:#2563eb"></div></div><div class="tc-label">☀️ Jasny</div></div>
+        <div class="theme-card" id="tc-dark" onclick="applyTheme('dark')"><div class="tc-preview"><div class="tc-sw" style="background:#0a0c10"></div><div class="tc-sw" style="background:#111420"></div><div class="tc-sw" style="background:#3b82f6"></div></div><div class="tc-label">🌑 Ciemny</div></div>
+        <div class="theme-card" id="tc-cream" onclick="applyTheme('cream')"><div class="tc-preview"><div class="tc-sw" style="background:#f7f3ee"></div><div class="tc-sw" style="background:#fffdf9"></div><div class="tc-sw" style="background:#b45309"></div></div><div class="tc-label">🟤 Kremowy</div></div>
+        <div class="theme-card" id="tc-slate" onclick="applyTheme('slate')"><div class="tc-preview"><div class="tc-sw" style="background:#1e293b"></div><div class="tc-sw" style="background:#0f172a"></div><div class="tc-sw" style="background:#38bdf8"></div></div><div class="tc-label">🔵 Granat</div></div>
+      </div>
+    </div>
+    <div class="te-section">
+      <div class="te-slbl">Kolor akcentu</div>
+      <div class="accent-grid">
+        <div class="accent-sw active" style="background:#2563eb" data-c="#2563eb" onclick="setAcc(this)"></div>
+        <div class="accent-sw" style="background:#7c3aed" data-c="#7c3aed" onclick="setAcc(this)"></div>
+        <div class="accent-sw" style="background:#059669" data-c="#059669" onclick="setAcc(this)"></div>
+        <div class="accent-sw" style="background:#d97706" data-c="#d97706" onclick="setAcc(this)"></div>
+        <div class="accent-sw" style="background:#dc2626" data-c="#dc2626" onclick="setAcc(this)"></div>
+        <div class="accent-sw" style="background:#0891b2" data-c="#0891b2" onclick="setAcc(this)"></div>
+        <div class="accent-sw" style="background:#be185d" data-c="#be185d" onclick="setAcc(this)"></div>
+        <div class="accent-sw" style="background:#16a34a" data-c="#16a34a" onclick="setAcc(this)"></div>
+        <div class="accent-sw" style="background:#6366f1" data-c="#6366f1" onclick="setAcc(this)"></div>
+        <div class="accent-sw" style="background:#374151" data-c="#374151" onclick="setAcc(this)"></div>
+        <input type="color" value="#2563eb" oninput="setAccRaw(this.value)" style="width:100%;height:26px;border-radius:6px;border:1px solid var(--border);cursor:pointer;padding:1px"/>
+        <div style="display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--t3)">Własny</div>
+      </div>
+    </div>
+    <div class="te-section">
+      <div class="te-slbl">Typografia</div>
+      <div class="font-btns">
+        <button class="font-btn active" onclick="setFont('Inter',this)" style="font-family:Inter">Inter</button>
+        <button class="font-btn" onclick="setFont('Sora',this)" style="font-family:Sora">Sora</button>
+        <button class="font-btn" onclick="setFont('system-ui',this)">System</button>
+        <button class="font-btn" onclick="setFont(&quot;IBM Plex Mono&quot;,this)" style="font-family:'IBM Plex Mono'">Mono</button>
+      </div>
+    </div>
+    <div class="te-section">
+      <div class="te-slbl">Rozmiar i gęstość</div>
+      <div class="te-row"><span class="te-row-lbl">Tekst</span><input type="range" class="te-slider" id="fs-sl" min="11" max="16" value="13" oninput="applyFS(this.value)"/><span class="te-row-val" id="fs-v">13px</span></div>
+      <div class="te-row"><span class="te-row-lbl">Zaokrąglenia</span><input type="range" class="te-slider" id="r-sl" min="0" max="18" value="10" oninput="applyR(this.value)"/><span class="te-row-val" id="r-v">10px</span></div>
+    </div>
+    <div class="te-section">
+      <div class="te-slbl">Elementy interfejsu</div>
+      <div class="te-toggle-row"><span class="te-toggle-lbl">Pasek podsumowania</span><button class="toggle on" onclick="toggleEl('summary',this)"></button></div>
+      <div class="te-toggle-row" style="margin-top:6px"><span class="te-toggle-lbl">Legenda mapy</span><button class="toggle on" onclick="toggleEl('legend',this)"></button></div>
+    </div>
+  </div>
+  <div class="te-footer">
+    <button class="te-reset" onclick="resetTE()">↺ Domyślne</button>
+    <button class="te-save" onclick="saveTE()">💾 Zapisz styl</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════
+// DATA
+// ══════════════════════════════
+const BASE=[
+  {id:'ZAM-001',street:'ul. Peowiaków',lat:50.7234,lng:23.2510,type:'LED',power:72,height:8,manufacturer:'Philips',year:2021,condition:'Dobry',district:'Centrum',notes:'Słup stalowy ocynkowany. Oprawa LED z modułem DALI.',photo:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80'},
+  {id:'ZAM-002',street:'ul. Peowiaków',lat:50.7229,lng:23.2498,type:'LED',power:72,height:8,manufacturer:'Philips',year:2021,condition:'Dobry',district:'Centrum',notes:'Identyczna jak ZAM-001.',photo:null},
+  {id:'ZAM-003',street:'ul. Zamenhoffa',lat:50.7245,lng:23.2525,type:'Sodowa',power:150,height:9,manufacturer:'ROSA',year:2009,condition:'Średni',district:'Centrum',notes:'Stary słup betonowy. Zmiana na LED wskazana.',photo:'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=600&q=80'},
+  {id:'ZAM-004',street:'ul. Partyzantów',lat:50.7219,lng:23.2541,type:'LED',power:96,height:10,manufacturer:'Thorn',year:2022,condition:'Dobry',district:'Starówka',notes:'Latarnia podwójna na słupie kompozytowym.',photo:null},
+  {id:'ZAM-005',street:'ul. Kilińskiego',lat:50.7253,lng:23.2489,type:'Rtęciowa',power:125,height:7,manufacturer:'Hellux',year:2001,condition:'Zły',district:'Starówka',notes:'Do wymiany. Klosz pęknięty.',photo:'https://images.unsplash.com/photo-1609726494499-27d3e942456c?w=600&q=80'},
+  {id:'ZAM-006',street:'ul. Stefanidesa',lat:50.7261,lng:23.2515,type:'LED',power:54,height:7.5,manufacturer:'Schreder',year:2020,condition:'Dobry',district:'Starówka',notes:'Oprawa stylizowana — strefa Starówki.',photo:null},
+  {id:'ZAM-007',street:'Rynek Wielki',lat:50.7270,lng:23.2531,type:'LED',power:45,height:6,manufacturer:'Norlys',year:2019,condition:'Dobry',district:'Starówka',notes:'Latarnia parkowa, ochrona konserwatorska.',photo:'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&q=80'},
+  {id:'ZAM-008',street:'ul. Akademicka',lat:50.7208,lng:23.2570,type:'Sodowa',power:100,height:8,manufacturer:'ZPUE',year:2012,condition:'Średni',district:'Nowe Miasto',notes:'Ślady korozji na słupie.',photo:null},
+  {id:'ZAM-009',street:'ul. Akademicka',lat:50.7201,lng:23.2588,type:'LED',power:80,height:8,manufacturer:'Philips',year:2023,condition:'Dobry',district:'Nowe Miasto',notes:'Sterowanie inteligentne.',photo:null},
+  {id:'ZAM-010',street:'ul. Lwowska',lat:50.7192,lng:23.2602,type:'Halogenowa',power:200,height:10,manufacturer:'Bega',year:2006,condition:'Zły',district:'Nowe Miasto',notes:'Priorytetowa wymiana na LED.',photo:'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=600&q=80'},
+  {id:'ZAM-011',street:'ul. Prosta',lat:50.7238,lng:23.2464,type:'LED',power:54,height:7,manufacturer:'Schreder',year:2021,condition:'Dobry',district:'Karolówka',notes:'Pełna sprawność.',photo:null},
+  {id:'ZAM-012',street:'ul. Prosta',lat:50.7231,lng:23.2451,type:'LED',power:54,height:7,manufacturer:'Schreder',year:2021,condition:'Dobry',district:'Karolówka',notes:'Wymaga przeglądu przyłącza.',photo:null},
+  {id:'ZAM-013',street:'ul. Żdanowska',lat:50.7285,lng:23.2497,type:'Sodowa',power:100,height:8.5,manufacturer:'ROSA',year:2010,condition:'Średni',district:'Karolówka',notes:'Migotanie oprawy w nocy.',photo:null},
+  {id:'ZAM-014',street:'Al. Jana Pawła II',lat:50.7179,lng:23.2558,type:'LED',power:108,height:12,manufacturer:'Siteco',year:2022,condition:'Dobry',district:'Majdan Hetmański',notes:'System TALQ.',photo:'https://images.unsplash.com/photo-1573511860302-28c524319d2a?w=600&q=80'},
+  {id:'ZAM-015',street:'Al. Jana Pawła II',lat:50.7172,lng:23.2542,type:'LED',power:108,height:12,manufacturer:'Siteco',year:2022,condition:'Dobry',district:'Majdan Hetmański',notes:'Moduł PLC aktywny.',photo:null},
+  {id:'ZAM-016',street:'ul. Zamojskiego',lat:50.7250,lng:23.2553,type:'Rtęciowa',power:125,height:7.5,manufacturer:'Elektromontaż',year:1998,condition:'Zły',district:'Centrum',notes:'Instalacja 1998 — brak uziemienia. Wymiana obowiązkowa.',photo:null},
+  {id:'ZAM-017',street:'ul. Bohaterów Monte Cassino',lat:50.7263,lng:23.2467,type:'LED',power:64,height:8,manufacturer:'Thorn',year:2020,condition:'Dobry',district:'Starówka',notes:'Barwa 3000K.',photo:null},
+  {id:'ZAM-018',street:'ul. Szczebrzeska',lat:50.7196,lng:23.2520,type:'Sodowa',power:150,height:9,manufacturer:'ZPUE',year:2008,condition:'Średni',district:'Nowe Miasto',notes:'Wskazana modernizacja.',photo:null},
+  {id:'ZAM-019',street:'ul. Lipowa',lat:50.7277,lng:23.2486,type:'LED',power:40,height:6,manufacturer:'Norlys',year:2023,condition:'Dobry',district:'Starówka',notes:'System fotowoltaiczny.',photo:'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=600&q=80'},
+  {id:'ZAM-020',street:'ul. Hrubieszowska',lat:50.7185,lng:23.2610,type:'Halogenowa',power:250,height:11,manufacturer:'Bega',year:2004,condition:'Zły',district:'Majdan Hetmański',notes:'250W — wymiana priorytet #1.',photo:null},
+];
+const COL={LED:'#059669',Sodowa:'#d97706',Rtęciowa:'#94a3b8',Halogenowa:'#f97316'};
+const SC={Dobry:'#059669',Średni:'#d97706',Zły:'#dc2626'};
+const isCrit=l=>l.condition==='Zły'||l.type==='Rtęciowa'||l.type==='Halogenowa'||(2025-l.year)>20;
+
+function getEdits(){return JSON.parse(localStorage.getItem('lamp_edits')||'{}')}
+function getNewLamps(){return JSON.parse(localStorage.getItem('new_lamps')||'[]')}
+function getDeleted(){return JSON.parse(localStorage.getItem('deleted_ids')||'[]')}
+function buildLamps(){
+  const edits=getEdits(),deleted=getDeleted(),newL=getNewLamps();
+  const base=BASE.filter(l=>!deleted.includes(l.id)).map(l=>edits[l.id]?{...l,...edits[l.id]}:l);
+  return [...base,...newL];
+}
+let LAMPS=buildLamps();
+
+let FL=[...LAMPS],sCol=null,sDir=1,selId=null,wyMode=false,addMode=false,addLatLng=null;
+let map,cg,MK={},curL,curLamp=null,svAngle=0;
+let charts={};
+let newLampCounter=getNewLamps().length;
+
+// ══ MAP ══
+function initMap(){
+  map=L.map('map',{zoomControl:false}).setView([50.7225,23.253],14);
+  const BM={
+    light:L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© CartoDB'}),
+    voyager:L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{attribution:'© CartoDB'}),
+    dark:L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© CartoDB'}),
+    sat:L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{attribution:'© Esri'}),
+    topo:L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{attribution:'© OpenTopoMap'}),
+  };
+  window._BM=BM; BM.voyager.addTo(map); curL=BM.voyager;
+  window.setBM=(k,el)=>{map.removeLayer(curL);curL=BM[k];curL.addTo(map);document.querySelectorAll('.bmbtn').forEach(b=>b.classList.remove('active'));el.classList.add('active');document.getElementById('bmp').classList.remove('open');document.getElementById('bm-toggle').classList.remove('active')};
+
+  cg=L.markerClusterGroup({maxClusterRadius:48,iconCreateFunction:cl=>{
+    const n=cl.getChildCount();
+    return L.divIcon({html:`<div style="width:34px;height:34px;border-radius:50%;background:rgba(37,99,235,.72);border:2px solid rgba(37,99,235,.3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;box-shadow:0 2px 10px rgba(37,99,235,.3)">${n}</div>`,iconSize:[34,34],iconAnchor:[17,17]});
+  }});
+  LAMPS.forEach(addMk);
+  map.addLayer(cg);
+  map.on('click',onMapClick);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')exitAddMode()});
+  setTimeout(()=>map.invalidateSize(),80);
+  updSum(); renderList(); renderTbl(); initDS();
+  loadTE();
+}
+function mkIcon(l,isNew=false){
+  const c=COL[l.type]||'#2563eb',bad=l.condition==='Zły',sz=bad?20:14;
+  if(isNew) return L.divIcon({className:'',html:`<div style="width:16px;height:16px;border-radius:50%;background:var(--a3,#059669);border:2px dashed #059669;box-shadow:0 1px 5px rgba(5,150,105,.5)"></div>`,iconSize:[16,16],iconAnchor:[8,8]});
+  return L.divIcon({className:'',html:`<div ${bad?'class="mbad"':''} style="width:${sz}px;height:${sz}px;border-radius:50%;background:${c};border:2px solid ${bad?'#dc2626':'rgba(255,255,255,.7)'};box-shadow:0 1px 6px ${c}88"></div>`,iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
+}
+function addMk(l){
+  const isNew=l.id.startsWith('NEW-');
+  const m=L.marker([l.lat,l.lng],{icon:mkIcon(l,isNew)});
+  m.on('click',()=>openMo(l));
+  const tc=COL[l.type]||'#2563eb',sc=SC[l.condition]||'#94a3b8';
+  m.bindPopup(`<div class="pp-id">${l.id}${isNew?' 🆕':''}</div><div class="pp-name">${l.street}</div><div class="pp-tags"><span class="pp-tag" style="color:${tc};border-color:${tc};background:${tc}18">${l.type}</span><span class="pp-tag" style="color:${sc};border-color:${sc};background:${sc}18">${l.condition}</span><span class="pp-tag" style="color:#7c3aed;border-color:#7c3aed;background:#7c3aed18">${l.power}W</span></div><button class="pp-btn" onclick="openMo(LAMPS.find(x=>x.id==='${l.id}'))">📋 Otwórz szczegóły</button>`,{maxWidth:210});
+  MK[l.id]=m; cg.addLayer(m);
+}
+function rebuildMk(l){cg.removeLayer(MK[l.id]);MK[l.id]=null;addMk(l)}
+
+// ══ ADD POINT MODE ══
+function toggleAddMode(){
+  addMode=!addMode;
+  document.getElementById('btn-add').classList.toggle('active',addMode);
+  document.getElementById('map').classList.toggle('add-mode',addMode);
+  document.getElementById('add-tooltip').classList.toggle('show',addMode);
+  toast(addMode?'📍 Kliknij na mapie aby dodać nowy punkt':'❌ Tryb dodawania anulowany');
+}
+function exitAddMode(){
+  addMode=false;
+  document.getElementById('btn-add').classList.remove('active');
+  document.getElementById('map').classList.remove('add-mode');
+  document.getElementById('add-tooltip').classList.remove('show');
+}
+function onMapClick(e){
+  if(!addMode)return;
+  addLatLng=e.latlng;
+  document.getElementById('add-coords-lbl').textContent=`📍 ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+  document.getElementById('add-modal-overlay').classList.add('open');
+  exitAddMode();
+}
+function closeAddModal(e){if(!e||e.target===document.getElementById('add-modal-overlay'))document.getElementById('add-modal-overlay').classList.remove('open')}
+function confirmAddPoint(){
+  if(!addLatLng)return;
+  newLampCounter++;
+  const id='NEW-'+String(newLampCounter).padStart(3,'0');
+  const lamp={
+    id,lat:addLatLng.lat,lng:addLatLng.lng,
+    street:document.getElementById('a-street').value||'Brak nazwy',
+    type:document.getElementById('a-type').value,
+    power:+document.getElementById('a-power').value||72,
+    height:+document.getElementById('a-height').value||8,
+    manufacturer:document.getElementById('a-manufacturer').value||'Nieznany',
+    year:+document.getElementById('a-year').value||2025,
+    condition:document.getElementById('a-condition').value,
+    district:document.getElementById('a-district').value,
+    notes:document.getElementById('a-notes').value,
+    photo:null,
+    _new:true,
+  };
+  const newLamps=getNewLamps(); newLamps.push(lamp); localStorage.setItem('new_lamps',JSON.stringify(newLamps));
+  LAMPS=buildLamps(); FL=[...LAMPS];
+  addMk(lamp);
+  closeAddModal(); updSum(); renderList(); renderTbl();
+  toast('✅ Punkt '+id+' dodany!');
+}
+
+// ══ FILTER / SUMMARY ══
+function initDS(){uDS('p');uDS('y')}
+function uDS(x){
+  const mn=document.getElementById(x+'n'),mx=document.getElementById(x+'x'),fill=document.getElementById(x+'f');
+  let a=+mn.value,b=+mx.value;
+  if(a>b){event&&event.target===mn?mn.value=b:mx.value=a;a=+mn.value;b=+mx.value;}
+  const mi=+mn.min,ma=+mn.max,p=v=>(v-mi)/(ma-mi)*100;
+  fill.style.left=p(a)+'%';fill.style.width=(p(b)-p(a))+'%';
+  document.getElementById(x+'n-l').textContent=a+(x==='p'?'W':'');
+  document.getElementById(x+'x-l').textContent=b+(x==='p'?'W':'');
+  applyF();
+}
+function tChip(el){el.classList.toggle('on');applyF()}
+function applyF(){
+  const sr=document.getElementById('search').value.toLowerCase();
+  const pn=+document.getElementById('pn').value,px=+document.getElementById('px').value;
+  const yn=+document.getElementById('yn').value,yx=+document.getElementById('yx').value;
+  const ty=[...document.querySelectorAll('[data-f="type"].on')].map(c=>c.dataset.v);
+  const co=[...document.querySelectorAll('[data-f="cond"].on')].map(c=>c.dataset.v);
+  const di=[...document.querySelectorAll('[data-f="dist"].on')].map(c=>c.dataset.v);
+  FL=LAMPS.filter(l=>{
+    if(wyMode&&!isCrit(l))return false;
+    if(ty.length&&!ty.includes(l.type))return false;
+    if(co.length&&!co.includes(l.condition))return false;
+    if(di.length&&!di.includes(l.district))return false;
+    if(l.power<pn||l.power>px)return false;
+    if(!l.id.startsWith('NEW-')&&(l.year<yn||l.year>yx))return false;
+    if(sr&&![l.id,l.street,l.type,l.district,l.manufacturer].some(v=>v.toLowerCase().includes(sr)))return false;
+    return true;
+  });
+  cg.clearLayers();FL.forEach(l=>cg.addLayer(MK[l.id]));
+  document.getElementById('sf').textContent=FL.length+'/'+LAMPS.length;
+  document.getElementById('lc').textContent=FL.length;
+  renderList();renderTbl();
+}
+function filterWy(){wyMode=!wyMode;document.getElementById('btn-wy').classList.toggle('active',wyMode);applyF();if(wyMode)toast('🔴 Widoczne: lampy do wymiany ('+FL.length+')')}
+function resetF(){wyMode=false;document.getElementById('search').value='';['pn','px','yn','yx'].forEach(id=>{const el=document.getElementById(id);el.value=el.id==='pn'?0:el.id==='px'?250:el.id==='yn'?1998:2023});document.querySelectorAll('.chip.on').forEach(c=>c.classList.remove('on'));document.getElementById('btn-wy').classList.remove('active');uDS('p');uDS('y');applyF();toast('↺ Filtry zresetowane')}
+function updSum(){
+  LAMPS=buildLamps();
+  const n=LAMPS.length,newL=getNewLamps().length;
+  const led=LAMPS.filter(l=>l.type==='LED').length,sod=LAMPS.filter(l=>l.type==='Sodowa').length;
+  const bad=LAMPS.filter(l=>l.condition==='Zły').length;
+  document.getElementById('st').textContent=n;
+  document.getElementById('sl').textContent=led;
+  document.getElementById('ss').textContent=sod;
+  document.getElementById('sb').textContent=bad;
+  document.getElementById('sw').textContent=LAMPS.reduce((s,l)=>s+l.power,0)+'W';
+  document.getElementById('sn').textContent=newL;
+  document.getElementById('sf').textContent=n+'/'+n;
+  document.getElementById('sb-l').style.width=(led/n*100)+'%';
+  document.getElementById('sb-s').style.width=(sod/n*100)+'%';
+  document.getElementById('sb-b').style.width=(bad/n*100)+'%';
+}
+
+// ══ LIST + TABLE ══
+function renderList(){
+  document.getElementById('lamp-list').innerHTML=FL.map(l=>`
+    <div class="lcard${selId===l.id?' sel':''}${isCrit(l)?' crit':''}${l._new?' new-lamp':''}" onclick="selLamp('${l.id}')">
+      <div class="lc-top"><span class="lc-id">${l.id}${l._new?' 🆕':''}</span><span class="lc-st" style="background:${SC[l.condition]}"></span></div>
+      <div class="lc-name">${l.street}</div>
+      <div class="lc-meta"><span style="color:${COL[l.type]}">${l.type}</span><span>${l.power}W</span><span>${l.district}</span></div>
+    </div>`).join('');
+}
+function selLamp(id){
+  selId=id;const l=LAMPS.find(x=>x.id===id);
+  if(l){map.setView([l.lat,l.lng],19,{animate:true,duration:0.8});setTimeout(()=>MK[id]&&MK[id].openPopup(),500);}
+  renderList();
+  document.querySelectorAll('tbody tr').forEach(r=>r.classList.remove('tsel'));
+  const row=document.querySelector('tr[data-id="'+id+'"]');
+  if(row){row.classList.add('tsel');row.scrollIntoView({block:'nearest'})}
+}
+function renderTbl(){
+  const edits=getEdits();
+  document.getElementById('tc2').textContent='('+FL.length+')';
+  let d=[...FL];
+  if(sCol)d.sort((a,b)=>typeof a[sCol]==='string'?a[sCol].localeCompare(b[sCol])*sDir:(a[sCol]-b[sCol])*sDir);
+  document.getElementById('tbody').innerHTML=d.map(l=>`
+    <tr data-id="${l.id}" onclick="selLamp('${l.id}')" class="${selId===l.id?'tsel':l._new?'rnew':l.condition==='Zły'?'rbad':l.condition==='Średni'?'rmid':''}">
+      <td>${l.id}</td><td>${l.street}</td>
+      <td><span style="color:${COL[l.type]};font-weight:500">${l.type}</span></td>
+      <td>${l.power}W</td>
+      <td><div class="tds"><div class="tdd" style="background:${SC[l.condition]}"></div>${l.condition}</div></td>
+      <td>${l.district}</td><td>${l.year}</td><td>${l.manufacturer}</td>
+      <td style="font-size:10px">${l._new?'🆕 Nowy':edits[l.id]?'✏️ Edyt.':'—'}</td>
+    </tr>`).join('');
+}
+function sT(c){sCol=sCol===c?null:c;sDir=sCol?1:1;renderTbl()}
+
+// ══ DASHBOARD ══
+function renderDash(){
+  if(charts.types)return;
+  const tickC=()=>getComputedStyle(document.documentElement).getPropertyValue('--t3').trim()||'#9ca3af';
+  const gridC=()=>'rgba(0,0,0,.06)';
+  const base={responsive:true,maintainAspectRatio:false,animation:{duration:500},plugins:{legend:{labels:{color:tickC(),font:{family:'Inter',size:10}}}}};
+  const noLeg={...base,plugins:{legend:{display:false}}};
+  const scales={x:{ticks:{color:tickC()},grid:{display:false}},y:{ticks:{color:tickC()},grid:{color:gridC()}}};
+
+  const types=['LED','Sodowa','Rtęciowa','Halogenowa'];
+  charts.types=new Chart(document.getElementById('cht'),{type:'doughnut',data:{labels:types,datasets:[{data:types.map(t=>LAMPS.filter(l=>l.type===t).length),backgroundColor:['#059669','#d97706','#94a3b8','#f97316'],borderColor:'transparent',borderWidth:4}]},options:{...base,cutout:'60%'}});
+  const conds=['Dobry','Średni','Zły'];
+  charts.cond=new Chart(document.getElementById('chc'),{type:'bar',data:{labels:conds,datasets:[{data:conds.map(c=>LAMPS.filter(l=>l.condition===c).length),backgroundColor:['#059669','#d97706','#dc2626'],borderRadius:5,borderSkipped:false}]},options:{...noLeg,scales}});
+  const pb=[[0,60],[61,100],[101,150],[151,250]];
+  charts.pwr=new Chart(document.getElementById('chp'),{type:'bar',data:{labels:pb.map(([a,b])=>a+'–'+b+'W'),datasets:[{data:pb.map(([a,b])=>LAMPS.filter(l=>l.power>=a&&l.power<=b).length),backgroundColor:'#2563eb',borderRadius:5,borderSkipped:false}]},options:{...noLeg,scales}});
+
+  const dists=['Centrum','Starówka','Nowe Miasto','Karolówka','Majdan Hetmański'];
+  const dd=dists.map(d=>{const ls=LAMPS.filter(l=>l.district===d);const led=ls.filter(l=>l.type==='LED').length;return{d,n:ls.length,led,bad:ls.filter(l=>l.condition==='Zły').length,avgW:ls.length?Math.round(ls.reduce((s,l)=>s+l.power,0)/ls.length):0,avgA:ls.length?Math.round(ls.reduce((s,l)=>s+(2025-l.year),0)/ls.length):0}});
+  document.getElementById('dtbl').innerHTML=`<tr><th>Dzielnica</th><th>Lamp</th><th>LED%</th><th>Złe</th><th>Śr.W</th><th>Wiek</th></tr>${dd.map(r=>`<tr><td>${r.d}</td><td style="color:var(--accent);font-weight:600">${r.n}</td><td><div style="color:#059669;font-weight:600">${r.n?Math.round(r.led/r.n*100):0}%</div><div class="dbar" style="width:${r.n?r.led/r.n*100:0}%"></div></td><td style="color:${r.bad>0?'#dc2626':'var(--t3)'}">${r.bad}</td><td>${r.avgW}W</td><td style="color:${r.avgA>15?'#d97706':'var(--t3)'}">${r.avgA}l</td></tr>`).join('')}`;
+  const crits=LAMPS.filter(isCrit).sort((a,b)=>{const s={Zły:3,Rtęciowa:2,Halogenowa:1};return(s[b.condition]||0)+(s[b.type]||0)-(s[a.condition]||0)-(s[a.type]||0)});
+  document.getElementById('plist').innerHTML=crits.map((l,i)=>{const c=i<2?'#dc2626':i<4?'#d97706':'#94a3b8',r=l.type==='Rtęciowa'?'Rtęciowa — zakaz UE':l.condition==='Zły'?'Stan zły':'Stara instalacja';return`<div class="pitem" onclick="selLamp('${l.id}');setVM('map')"><div class="pbadge" style="background:${c}18;color:${c};border:1px solid ${c}">#${i+1}</div><div style="flex:1;min-width:0"><div class="pname">${l.id} — ${l.street}</div><div class="pmeta">${r} · ${l.power}W · ${2025-l.year}l</div></div></div>`;}).join('');
+}
+
+// ══ DETAIL MODAL ══
+function setMTab(name,btn){
+  document.querySelectorAll('.mpane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.mtab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(name+'-pane').classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(name==='sv'&&curLamp)loadSV(curLamp);
+  if(name==='edit'&&curLamp)fillEdit(curLamp);
+}
+function openMo(l){
+  if(!l)return;selId=l.id;curLamp=l;
+  const mi=document.getElementById('mimg');
+  const ex=mi.querySelector('img');if(ex)ex.remove();
+  document.getElementById('memoji').style.display=l.photo?'none':'';
+  if(l.photo){const img=new Image();img.src=l.photo;img.style.cssText='width:100%;height:100%;object-fit:cover;position:absolute;inset:0';mi.appendChild(img);}
+  document.getElementById('mid').textContent=l.id+(l._new?' 🆕':'');
+  document.getElementById('mname').textContent=l.street;
+  const ey=Math.round(l.power*4000/1000*.75);
+  document.getElementById('mgrid').innerHTML=[
+    {la:'Typ',v:l.type,c:COL[l.type]},{la:'Moc',v:l.power+'W',c:'#7c3aed'},
+    {la:'Wiek',v:(2025-l.year)+' lat',c:(2025-l.year)>15?'#d97706':null},
+    {la:'Wysokość',v:l.height+'m',c:null},{la:'Producent',v:l.manufacturer,c:null},
+    {la:'Stan',v:l.condition,c:SC[l.condition]},{la:'Dzielnica',v:l.district,c:null},
+    {la:'Koszt/rok',v:'~'+ey+' zł',c:'#0891b2'},
+  ].map(f=>`<div class="mf"><div class="mfl">${f.la}</div><div class="mfv" style="${f.c?'color:'+f.c:''}">${f.v}</div></div>`).join('');
+  document.getElementById('mnotes').textContent=l.notes;
+  document.getElementById('m-photo').onclick=()=>l.photo?window.open(l.photo,'_blank'):toast('Brak zdjęcia');
+  document.getElementById('m-nav').onclick=()=>window.open(`https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}`,'_blank');
+  document.getElementById('sv-img').src='';
+  document.getElementById('sv-fallback').style.display='none';
+  document.getElementById('sv-img').style.display='';
+  document.querySelectorAll('.uchip').forEach(c=>c.classList.remove('on'));
+  document.getElementById('u-desc').value='';
+  setMTab('info',document.querySelector('.mtab'));
+  document.getElementById('mo').classList.add('open');
+  renderList();
+}
+function closeMo(e){if(!e||e.target===document.getElementById('mo'))document.getElementById('mo').classList.remove('open')}
+
+// ══ STREET VIEW ══
+// Uses Google Street View Static API (no key needed for personal/dev use)
+// Multiple angles via heading parameter
+const SV_ANGLES=[0,90,180,270];
+function loadSV(l){
+  svAngle=0;
+  setSVImage(l,0);
+  const coordStr=l.lat.toFixed(5)+', '+l.lng.toFixed(5);
+  document.getElementById('sv-coords').textContent='📍 '+coordStr;
+  document.getElementById('sv-coords-fb').textContent=coordStr;
+  document.getElementById('sv-gsv-link').href=`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${l.lat},${l.lng}`;
+  document.getElementById('sv-maps-link').href=`https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}`;
+}
+function setSVImage(l,angle){
+  const img=document.getElementById('sv-img');
+  const src=`https://maps.googleapis.com/maps/api/streetview?size=600x280&location=${l.lat},${l.lng}&fov=90&heading=${angle}&pitch=0&return_error_code=true`;
+  img.style.display='block';
+  img.src=src;
+}
+function svImgError(){
+  document.getElementById('sv-img').style.display='none';
+  document.getElementById('sv-fallback').style.display='flex';
+}
+function svNextAngle(){
+  if(!curLamp)return;
+  svAngle=(svAngle+90)%360;
+  document.getElementById('sv-img').style.display='block';
+  document.getElementById('sv-fallback').style.display='none';
+  setSVImage(curLamp,svAngle);
+  toast('🔄 Kąt: '+svAngle+'°');
+}
+
+// ══ EDIT LAMP ══
+function fillEdit(l){
+  ['street','type','power','height','year','manufacturer','condition','district','notes'].forEach(k=>{
+    const el=document.getElementById('e-'+k);if(el)el.value=l[k]||'';
+  });
+  document.getElementById('edit-status').style.display='none';
+}
+function saveEdit(){
+  if(!curLamp)return;
+  const id=curLamp.id;
+  const updated={street:document.getElementById('e-street').value,type:document.getElementById('e-type').value,power:+document.getElementById('e-power').value,height:+document.getElementById('e-height').value,year:+document.getElementById('e-year').value,manufacturer:document.getElementById('e-manufacturer').value,condition:document.getElementById('e-condition').value,district:document.getElementById('e-district').value,notes:document.getElementById('e-notes').value};
+  if(id.startsWith('NEW-')){
+    const newL=getNewLamps(); const idx=newL.findIndex(l=>l.id===id); if(idx>=0){newL[idx]={...newL[idx],...updated};localStorage.setItem('new_lamps',JSON.stringify(newL));}
+  } else {
+    const edits=getEdits(); edits[id]=updated; localStorage.setItem('lamp_edits',JSON.stringify(edits));
+  }
+  LAMPS=buildLamps(); curLamp={...curLamp,...updated};
+  const idx=LAMPS.findIndex(l=>l.id===id); if(idx>=0) rebuildMk(LAMPS[idx]);
+  document.getElementById('edit-status').style.display='block';
+  document.getElementById('mname').textContent=updated.street;
+  setTimeout(()=>document.getElementById('edit-status').style.display='none',2500);
+  applyF(); updSum(); toast('💾 Zapisano: '+id);
+}
+function deleteLamp(){
+  if(!curLamp||!confirm('Usunąć punkt '+curLamp.id+'? Tej operacji nie można cofnąć.'))return;
+  const id=curLamp.id;
+  if(id.startsWith('NEW-')){
+    const newL=getNewLamps().filter(l=>l.id!==id); localStorage.setItem('new_lamps',JSON.stringify(newL));
+  } else {
+    const del=getDeleted(); del.push(id); localStorage.setItem('deleted_ids',JSON.stringify(del));
+    const edits=getEdits(); delete edits[id]; localStorage.setItem('lamp_edits',JSON.stringify(edits));
+  }
+  cg.removeLayer(MK[id]); delete MK[id];
+  LAMPS=buildLamps(); FL=FL.filter(l=>l.id!==id);
+  document.getElementById('mo').classList.remove('open');
+  updSum(); renderList(); renderTbl(); toast('🗑 Punkt '+id+' usunięty');
+}
+
+// ══ USTERKA ══
+function tUC(el){el.classList.toggle('on')}
+function handleUP(i){if(i.files&&i.files[0]){const p=document.getElementById('u-prev');p.style.display='block';p.textContent='✅ '+i.files[0].name;}}
+function submitU(){
+  const types=[...document.querySelectorAll('.uchip.on')].map(c=>c.textContent);
+  if(!types.length){toast('⚠ Wybierz typ usterki');return}
+  const rep={id:curLamp.id,street:curLamp.street,lat:curLamp.lat,lng:curLamp.lng,types,desc:document.getElementById('u-desc').value,ts:new Date().toISOString()};
+  const s=JSON.parse(localStorage.getItem('usterki')||'[]');s.push(rep);localStorage.setItem('usterki',JSON.stringify(s));
+  document.querySelectorAll('.uchip').forEach(c=>c.classList.remove('on'));
+  document.getElementById('u-desc').value='';
+  toast('✅ Zgłoszenie zapisane ('+curLamp.id+')');
+}
+
+// ══ EXPORTS ══
+function toggleExportPanel(){
+  const p=document.getElementById('export-panel');
+  p.classList.toggle('open');
+  document.getElementById('export-btn').classList.toggle('active',p.classList.contains('open'));
+}
+function exportCSV(){
+  const BOM='\uFEFF',hdr=['ID','Ulica','Typ','Moc_W','Wys_m','Producent','Rok','Stan','Dzielnica','Lat','Lng','Status'];
+  const edits=getEdits();
+  const rows=FL.map(l=>[l.id,'"'+l.street+'"',l.type,l.power,l.height,l.manufacturer,l.year,l.condition,'"'+l.district+'"',l.lat.toFixed(6),l.lng.toFixed(6),l._new?'NOWY':edits[l.id]?'EDYTOWANY':'ORYGINALNY'].join(';'));
+  const blob=new Blob([BOM+[hdr.join(';'),...rows].join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'zamość-oswietlenie-'+new Date().toISOString().slice(0,10)+'.csv'});
+  a.click();URL.revokeObjectURL(a.href);
+  toggleExportPanel(); toast('⬇ CSV: '+FL.length+' rekordów');
+}
+function exportGeoJSON(){
+  const edits=getEdits();
+  const fc={type:'FeatureCollection',name:'UrbanLux_Zamość',generated:new Date().toISOString(),features:FL.map(l=>({type:'Feature',geometry:{type:'Point',coordinates:[+l.lng.toFixed(6),+l.lat.toFixed(6)]},properties:{id:l.id,street:l.street,type:l.type,power:l.power,height:l.height,manufacturer:l.manufacturer,year:l.year,condition:l.condition,district:l.district,notes:l.notes,status:l._new?'NOWY':edits[l.id]?'EDYTOWANY':'ORYGINALNY'}}))};
+  const blob=new Blob([JSON.stringify(fc,null,2)],{type:'application/json'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'zamość-oswietlenie-'+new Date().toISOString().slice(0,10)+'.geojson'});
+  a.click();URL.revokeObjectURL(a.href);
+  toggleExportPanel(); toast('🌐 GeoJSON: '+FL.length+' punktów');
+}
+function generateUsterkaReport(){
+  const usterki=JSON.parse(localStorage.getItem('usterki')||'[]');
+  if(!usterki.length){toggleExportPanel();toast('ℹ️ Brak zapisanych zgłoszeń usterek');return;}
+  const now=new Date().toLocaleString('pl-PL');
+  const rows=usterki.map((u,i)=>{
+    const l=LAMPS.find(x=>x.id===u.id)||{};
+    return`<tr><td>${i+1}</td><td><strong>${u.id}</strong></td><td>${u.street||l.street||'—'}</td><td>${u.types.join(', ')}</td><td>${u.desc||'—'}</td><td>${l.type||'—'}</td><td>${l.condition||'—'}</td><td>${l.district||'—'}</td><td>${new Date(u.ts).toLocaleString('pl-PL')}</td></tr>`;
+  }).join('');
+  const html=`<!DOCTYPE html><html lang="pl"><head><meta charset="UTF-8"><title>Raport Usterek — UrbanLux Zamość</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#111}h1{color:#dc2626}h2{color:#374151;border-bottom:2px solid #e5e7eb;padding-bottom:6px}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}th{background:#f3f4f6;padding:8px 10px;text-align:left;border:1px solid #e5e7eb;font-weight:600}td{padding:7px 10px;border:1px solid #e5e7eb}tr:nth-child(even){background:#f9fafb}.meta{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px 16px;margin:12px 0;font-size:14px}@media print{button{display:none}}</style></head><body>
+<h1>⚠️ Raport Usterek — UrbanLux Zamość</h1>
+<div class="meta">📅 Wygenerowano: <strong>${now}</strong> &nbsp;|&nbsp; Liczba zgłoszeń: <strong>${usterki.length}</strong></div>
+<h2>Lista zgłoszeń</h2>
+<table><thead><tr><th>#</th><th>ID</th><th>Ulica</th><th>Typ usterki</th><th>Opis</th><th>Typ lampy</th><th>Stan</th><th>Dzielnica</th><th>Data zgłoszenia</th></tr></thead><tbody>${rows}</tbody></table>
+<br><button onclick="window.print()" style="padding:10px 20px;background:#dc2626;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">🖨 Drukuj raport</button>
+</body></html>`;
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'raport-usterek-'+new Date().toISOString().slice(0,10)+'.html'});
+  a.click();URL.revokeObjectURL(a.href);
+  toggleExportPanel(); toast('📋 Raport usterek: '+usterki.length+' zgłoszeń');
+}
+function generateChangesReport(){
+  const edits=getEdits(),newL=getNewLamps(),deleted=getDeleted();
+  const editCount=Object.keys(edits).length;
+  if(!editCount&&!newL.length&&!deleted.length){toggleExportPanel();toast('ℹ️ Brak zmian do raportowania');return;}
+  const now=new Date().toLocaleString('pl-PL');
+  const editRows=Object.entries(edits).map(([id,e])=>{const orig=BASE.find(l=>l.id===id)||{};return`<tr><td>✏️ Edycja</td><td><strong>${id}</strong></td><td>${e.street||orig.street}</td><td>${e.condition||orig.condition}</td><td>${Object.keys(e).join(', ')}</td></tr>`;}).join('');
+  const newRows=newL.map(l=>`<tr style="background:#f0fdf4"><td>🆕 Nowy</td><td><strong>${l.id}</strong></td><td>${l.street}</td><td>${l.condition}</td><td>${l.type}, ${l.power}W, ${l.district}</td></tr>`).join('');
+  const delRows=deleted.map(id=>{const orig=BASE.find(l=>l.id===id)||{id,street:'Nieznana'};return`<tr style="background:#fef2f2"><td>🗑 Usunięty</td><td><strong>${id}</strong></td><td>${orig.street}</td><td>—</td><td>Punkt usunięty z inwentaryzacji</td></tr>`;}).join('');
+  const html=`<!DOCTYPE html><html lang="pl"><head><meta charset="UTF-8"><title>Raport Zmian — UrbanLux Zamość</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#111}h1{color:#2563eb}h2{color:#374151;border-bottom:2px solid #e5e7eb;padding-bottom:6px}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}th{background:#f3f4f6;padding:8px 10px;text-align:left;border:1px solid #e5e7eb;font-weight:600}td{padding:7px 10px;border:1px solid #e5e7eb}.meta{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;margin:12px 0}.stat{display:inline-block;padding:6px 14px;border-radius:6px;font-weight:600;margin-right:8px;font-size:14px}@media print{button{display:none}}</style></head><body>
+<h1>📝 Raport Zmian — UrbanLux Zamość</h1>
+<div class="meta">📅 Wygenerowano: <strong>${now}</strong><br><span class="stat" style="background:#fef3c7">✏️ Edycje: ${editCount}</span><span class="stat" style="background:#dcfce7">🆕 Nowe: ${newL.length}</span><span class="stat" style="background:#fee2e2">🗑 Usunięte: ${deleted.length}</span></div>
+<h2>Szczegóły zmian</h2>
+<table><thead><tr><th>Typ zmiany</th><th>ID</th><th>Ulica</th><th>Stan</th><th>Szczegóły</th></tr></thead><tbody>${editRows}${newRows}${delRows}</tbody></table>
+<br><button onclick="window.print()" style="padding:10px 20px;background:#2563eb;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px">🖨 Drukuj raport</button>
+</body></html>`;
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'raport-zmian-'+new Date().toISOString().slice(0,10)+'.html'});
+  a.click();URL.revokeObjectURL(a.href);
+  toggleExportPanel(); toast('📝 Raport zmian wygenerowany');
+}
+
+// ══ UI ══
+function setVM(m){
+  const dash=document.getElementById('dashboard');
+  const showing=m==='dashboard';
+  dash.classList.toggle('show',showing);
+  if(showing){document.getElementById('bp').classList.add('hidden');requestAnimationFrame(()=>requestAnimationFrame(()=>renderDash()));}
+  document.getElementById('btn-map').classList.toggle('active',m==='map');
+  document.getElementById('btn-dash').classList.toggle('active',showing);
+}
+function toggleBM(){const p=document.getElementById('bmp');p.classList.toggle('open');document.getElementById('bm-toggle').classList.toggle('active')}
+function toggleSB(){const s=document.getElementById('sidebar');window.innerWidth<=768?s.classList.toggle('open'):s.classList.toggle('collapsed');setTimeout(()=>map&&map.invalidateSize(),240)}
+function togglePanel(){const p=document.getElementById('bp');p.classList.toggle('hidden');document.getElementById('btn-tbl').classList.toggle('active',!p.classList.contains('hidden'))}
+function fitAll(){const pts=LAMPS.map(l=>L.latLng(l.lat,l.lng));if(pts.length)map.fitBounds(L.latLngBounds(pts),{padding:[30,30]})}
+function geo(){navigator.geolocation.getCurrentPosition(p=>{map.setView([p.coords.latitude,p.coords.longitude],17);toast('📍 Twoja lokalizacja')},()=>toast('❌ Brak dostępu do lokalizacji'))}
+function toast(msg,dur=2600){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),dur)}
+function toggleEl(id,btn){const el=document.getElementById(id);el.style.display=el.style.display==='none'?'':'none';btn.classList.toggle('on',el.style.display!=='none');setTimeout(()=>map&&map.invalidateSize(),100)}
+
+// ══ THEME ══
+const THEMES={
+  light:{bg0:'#f0f2f8',bg1:'#fff',bg2:'#f5f7ff',bg3:'#eaecf8',border:'#d0d5e8',border2:'#b8c0dc',t1:'#111827',t2:'#4b5680',t3:'#9ca3af',hbg:'rgba(255,255,255,.94)',card:'#fff',card2:'#f8faff',dark:false},
+  dark:{bg0:'#0a0c10',bg1:'#111420',bg2:'#181c2e',bg3:'#1f253d',border:'#2a3050',border2:'#3a4270',t1:'#e8eaf6',t2:'#8892b0',t3:'#4a5580',hbg:'rgba(10,12,16,.95)',card:'#111420',card2:'#181c2e',dark:true},
+  cream:{bg0:'#f7f3ee',bg1:'#fffdf9',bg2:'#f5f0ea',bg3:'#eee8df',border:'#d9cfc4',border2:'#c4b9aa',t1:'#1c1711',t2:'#5c5045',t3:'#9c8c7d',hbg:'rgba(255,253,249,.94)',card:'#fffdf9',card2:'#f5f0ea',dark:false},
+  slate:{bg0:'#1e293b',bg1:'#0f172a',bg2:'#1e293b',bg3:'#293548',border:'#334155',border2:'#475569',t1:'#f1f5f9',t2:'#94a3b8',t3:'#64748b',hbg:'rgba(15,23,42,.95)',card:'#0f172a',card2:'#1e293b',dark:true},
+};
+let curTheme='light',curAccent='#2563eb';
+function toggleTE(){document.getElementById('te-panel').classList.toggle('open');document.getElementById('te-btn').classList.toggle('active')}
+function quickToggleTheme(){applyTheme(curTheme==='light'||curTheme==='cream'?'dark':'light')}
+function applyTheme(name){
+  curTheme=name; const t=THEMES[name]; if(!t)return;
+  const r=document.documentElement.style;
+  const map2={bg0:'--bg-0',bg1:'--bg-1',bg2:'--bg-2',bg3:'--bg-3',border:'--border',border2:'--border2',t1:'--t1',t2:'--t2',t3:'--t3',hbg:'--hbg',card:'--card',card2:'--card2'};
+  Object.entries(map2).forEach(([k,v])=>r.setProperty(v,t[k]));
+  document.documentElement.setAttribute('data-theme',t.dark?'dark':'light');
+  document.querySelectorAll('.theme-card').forEach(c=>c.classList.remove('active'));
+  const tc=document.getElementById('tc-'+name);if(tc)tc.classList.add('active');
+  document.getElementById('theme-btn').textContent=t.dark?'☀️':'🌑';
+}
+function setAcc(el){document.querySelectorAll('.accent-sw').forEach(s=>s.classList.remove('active'));el.classList.add('active');setAccRaw(el.dataset.c)}
+function setAccRaw(c){curAccent=c;const r=parseInt(c.slice(1,3),16),g=parseInt(c.slice(3,5),16),b=parseInt(c.slice(5,7),16);document.documentElement.style.setProperty('--accent',c);document.documentElement.style.setProperty('--ag',`rgba(${r},${g},${b},.11)`);}
+function setFont(f,btn){document.documentElement.style.setProperty('--fu','\''+f+'\', sans-serif');document.querySelectorAll('.font-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+function applyFS(v){document.documentElement.style.fontSize=v+'px';document.getElementById('fs-v').textContent=v+'px'}
+function applyR(v){document.documentElement.style.setProperty('--r',v+'px');document.getElementById('r-v').textContent=v+'px'}
+function saveTE(){localStorage.setItem('ul_theme',JSON.stringify({theme:curTheme,accent:curAccent,fs:document.getElementById('fs-sl').value,r:document.getElementById('r-sl').value}));toast('💾 Styl zapisany!')}
+function resetTE(){localStorage.removeItem('ul_theme');document.documentElement.removeAttribute('style');document.documentElement.setAttribute('data-theme','light');curTheme='light';curAccent='#2563eb';document.getElementById('tc-light').classList.add('active');['tc-dark','tc-cream','tc-slate'].forEach(id=>document.getElementById(id).classList.remove('active'));document.getElementById('theme-btn').textContent='🌑';setTimeout(()=>map&&map.invalidateSize(),100);toast('↺ Domyślny wygląd przywrócony')}
+function loadTE(){const s=localStorage.getItem('ul_theme');if(!s)return;try{const t=JSON.parse(s);if(t.theme)applyTheme(t.theme);if(t.accent)setAccRaw(t.accent);if(t.fs){document.getElementById('fs-sl').value=t.fs;applyFS(t.fs);}if(t.r){document.getElementById('r-sl').value=t.r;applyR(t.r);}}catch(e){}}
+
+document.addEventListener('DOMContentLoaded',initMap);
+</script>
+</body>
+</html>
