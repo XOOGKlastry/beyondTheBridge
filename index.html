@@ -3081,118 +3081,19 @@
       </div>
     </div>
   </div>
-
   <script>
     // ═══════════════════════════════════════════════════
-    // DATA (GeoJSON Adapter)
+    // KONFIGURACJA API (Twój serwer Node.js)
     // ═══════════════════════════════════════════════════
+    const API_URL = 'http://localhost:3000/api';
+
+    // Awaryjne dane (GeoJSON), używane tylko jeśli serwer jest pusty
     const SOURCE_GEOJSON = {
       "type": "FeatureCollection",
       "features": [
         { "type": "Feature", "properties": { "fid": 50 }, "geometry": { "type": "Point", "coordinates": [23.213643, 50.711741] } },
         { "type": "Feature", "properties": { "fid": 51 }, "geometry": { "type": "Point", "coordinates": [23.213332, 50.715181] } },
-        { "type": "Feature", "properties": { "fid": 52 }, "geometry": { "type": "Point", "coordinates": [23.214025, 50.715266] } },
-        { "type": "Feature", "properties": { "fid": 64 }, "geometry": { "type": "Point", "coordinates": [23.218291, 50.706674] } },
-        { "type": "Feature", "properties": { "fid": 65 }, "geometry": { "type": "Point", "coordinates": [23.216805, 50.710728] } },
-        { "type": "Feature", "properties": { "fid": 66 }, "geometry": { "type": "Point", "coordinates": [23.215148, 50.711353] } },
-        { "type": "Feature", "properties": { "fid": 67 }, "geometry": { "type": "Point", "coordinates": [23.214508, 50.711768] } },
-        { "type": "Feature", "properties": { "fid": 68 }, "geometry": { "type": "Point", "coordinates": [23.215189, 50.712164] } },
-        { "type": "Feature", "properties": { "fid": 69 }, "geometry": { "type": "Point", "coordinates": [23.218199, 50.712392] } },
-        { "type": "Feature", "properties": { "fid": 70 }, "geometry": { "type": "Point", "coordinates": [23.218296, 50.712407] } },
-        { "type": "Feature", "properties": { "fid": 71 }, "geometry": { "type": "Point", "coordinates": [23.216675, 50.712506] } },
-        { "type": "Feature", "properties": { "fid": 72 }, "geometry": { "type": "Point", "coordinates": [23.219234, 50.712924] } },
-        { "type": "Feature", "properties": { "fid": 73 }, "geometry": { "type": "Point", "coordinates": [23.220818, 50.713087] } },
-        { "type": "Feature", "properties": { "fid": 74 }, "geometry": { "type": "Point", "coordinates": [23.220615, 50.713352] } },
-        { "type": "Feature", "properties": { "fid": 75 }, "geometry": { "type": "Point", "coordinates": [23.220568, 50.713574] } },
-        { "type": "Feature", "properties": { "fid": 76 }, "geometry": { "type": "Point", "coordinates": [23.220452, 50.714026] } },
-        { "type": "Feature", "properties": { "fid": 77 }, "geometry": { "type": "Point", "coordinates": [23.220386, 50.714245] } },
-        { "type": "Feature", "properties": { "fid": 78 }, "geometry": { "type": "Point", "coordinates": [23.214718, 50.715352] } },
-        { "type": "Feature", "properties": { "fid": 79 }, "geometry": { "type": "Point", "coordinates": [23.219939, 50.715227] } },
-        { "type": "Feature", "properties": { "fid": 80 }, "geometry": { "type": "Point", "coordinates": [23.215421, 50.715439] } },
-        { "type": "Feature", "properties": { "fid": 81 }, "geometry": { "type": "Point", "coordinates": [23.216116, 50.715523] } },
-        { "type": "Feature", "properties": { "fid": 82 }, "geometry": { "type": "Point", "coordinates": [23.219852, 50.715421] } },
-        { "type": "Feature", "properties": { "fid": 83 }, "geometry": { "type": "Point", "coordinates": [23.216806, 50.715609] } },
-        { "type": "Feature", "properties": { "fid": 84 }, "geometry": { "type": "Point", "coordinates": [23.219762, 50.715604] } },
-        { "type": "Feature", "properties": { "fid": 85 }, "geometry": { "type": "Point", "coordinates": [23.218202, 50.715778] } },
-        { "type": "Feature", "properties": { "fid": 86 }, "geometry": { "type": "Point", "coordinates": [23.218538, 50.715816] } },
-        { "type": "Feature", "properties": { "fid": 87 }, "geometry": { "type": "Point", "coordinates": [23.218900, 50.715860] } },
-        { "type": "Feature", "properties": { "fid": 88 }, "geometry": { "type": "Point", "coordinates": [23.219240, 50.715902] } },
-        { "type": "Feature", "properties": { "fid": 89 }, "geometry": { "type": "Point", "coordinates": [23.221077, 50.718367] } },
-        { "type": "Feature", "properties": { "fid": 90 }, "geometry": { "type": "Point", "coordinates": [23.221266, 50.718782] } },
-        { "type": "Feature", "properties": { "fid": 91 }, "geometry": { "type": "Point", "coordinates": [23.219888, 50.719834] } },
-        { "type": "Feature", "properties": { "fid": 92 }, "geometry": { "type": "Point", "coordinates": [23.220904, 50.719887] } },
-        { "type": "Feature", "properties": { "fid": 93 }, "geometry": { "type": "Point", "coordinates": [23.221507, 50.720906] } },
-        { "type": "Feature", "properties": { "fid": 94 }, "geometry": { "type": "Point", "coordinates": [23.218479, 50.721764] } },
-        { "type": "Feature", "properties": { "fid": 95 }, "geometry": { "type": "Point", "coordinates": [23.219443, 50.721812] } },
-        { "type": "Feature", "properties": { "fid": 96 }, "geometry": { "type": "Point", "coordinates": [23.220240, 50.723027] } },
-        { "type": "Feature", "properties": { "fid": 97 }, "geometry": { "type": "Point", "coordinates": [23.222047, 50.725571] } },
-        { "type": "Feature", "properties": { "fid": 98 }, "geometry": { "type": "Point", "coordinates": [23.215165, 50.725864] } },
-        { "type": "Feature", "properties": { "fid": 99 }, "geometry": { "type": "Point", "coordinates": [23.218604, 50.725900] } },
-        { "type": "Feature", "properties": { "fid": 100 }, "geometry": { "type": "Point", "coordinates": [23.221024, 50.725839] } },
-        { "type": "Feature", "properties": { "fid": 101 }, "geometry": { "type": "Point", "coordinates": [23.219916, 50.725914] } },
-        { "type": "Feature", "properties": { "fid": 102 }, "geometry": { "type": "Point", "coordinates": [23.220676, 50.725904] } },
-        { "type": "Feature", "properties": { "fid": 103 }, "geometry": { "type": "Point", "coordinates": [23.221987, 50.728122] } },
-        { "type": "Feature", "properties": { "fid": 104 }, "geometry": { "type": "Point", "coordinates": [23.215597, 50.728716] } },
-        { "type": "Feature", "properties": { "fid": 105 }, "geometry": { "type": "Point", "coordinates": [23.221420, 50.729813] } },
-        { "type": "Feature", "properties": { "fid": 106 }, "geometry": { "type": "Point", "coordinates": [23.221342, 50.730052] } },
-        { "type": "Feature", "properties": { "fid": 107 }, "geometry": { "type": "Point", "coordinates": [23.221270, 50.730292] } },
-        { "type": "Feature", "properties": { "fid": 108 }, "geometry": { "type": "Point", "coordinates": [23.221194, 50.730529] } },
-        { "type": "Feature", "properties": { "fid": 109 }, "geometry": { "type": "Point", "coordinates": [23.221128, 50.730761] } },
-        { "type": "Feature", "properties": { "fid": 115 }, "geometry": { "type": "Point", "coordinates": [23.233940, 50.694905] } },
-        { "type": "Feature", "properties": { "fid": 116 }, "geometry": { "type": "Point", "coordinates": [23.225120, 50.710336] } },
-        { "type": "Feature", "properties": { "fid": 117 }, "geometry": { "type": "Point", "coordinates": [23.226450, 50.712757] } },
-        { "type": "Feature", "properties": { "fid": 118 }, "geometry": { "type": "Point", "coordinates": [23.221030, 50.713370] } },
-        { "type": "Feature", "properties": { "fid": 119 }, "geometry": { "type": "Point", "coordinates": [23.226254, 50.713196] } },
-        { "type": "Feature", "properties": { "fid": 120 }, "geometry": { "type": "Point", "coordinates": [23.226137, 50.713445] } },
-        { "type": "Feature", "properties": { "fid": 121 }, "geometry": { "type": "Point", "coordinates": [23.222523, 50.713817] } },
-        { "type": "Feature", "properties": { "fid": 122 }, "geometry": { "type": "Point", "coordinates": [23.225910, 50.713939] } },
-        { "type": "Feature", "properties": { "fid": 123 }, "geometry": { "type": "Point", "coordinates": [23.225825, 50.714126] } },
-        { "type": "Feature", "properties": { "fid": 124 }, "geometry": { "type": "Point", "coordinates": [23.224606, 50.714233] } },
-        { "type": "Feature", "properties": { "fid": 125 }, "geometry": { "type": "Point", "coordinates": [23.224185, 50.714920] } },
-        { "type": "Feature", "properties": { "fid": 126 }, "geometry": { "type": "Point", "coordinates": [23.232207, 50.714793] } },
-        { "type": "Feature", "properties": { "fid": 127 }, "geometry": { "type": "Point", "coordinates": [23.222887, 50.715375] } },
-        { "type": "Feature", "properties": { "fid": 128 }, "geometry": { "type": "Point", "coordinates": [23.227524, 50.715374] } },
-        { "type": "Feature", "properties": { "fid": 129 }, "geometry": { "type": "Point", "coordinates": [23.229248, 50.715339] } },
-        { "type": "Feature", "properties": { "fid": 130 }, "geometry": { "type": "Point", "coordinates": [23.235240, 50.715231] } },
-        { "type": "Feature", "properties": { "fid": 131 }, "geometry": { "type": "Point", "coordinates": [23.231602, 50.715469] } },
-        { "type": "Feature", "properties": { "fid": 132 }, "geometry": { "type": "Point", "coordinates": [23.231244, 50.715496] } },
-        { "type": "Feature", "properties": { "fid": 133 }, "geometry": { "type": "Point", "coordinates": [23.230878, 50.715524] } },
-        { "type": "Feature", "properties": { "fid": 134 }, "geometry": { "type": "Point", "coordinates": [23.230491, 50.715559] } },
-        { "type": "Feature", "properties": { "fid": 135 }, "geometry": { "type": "Point", "coordinates": [23.223989, 50.715819] } },
-        { "type": "Feature", "properties": { "fid": 136 }, "geometry": { "type": "Point", "coordinates": [23.230333, 50.716205] } },
-        { "type": "Feature", "properties": { "fid": 137 }, "geometry": { "type": "Point", "coordinates": [23.231309, 50.716184] } },
-        { "type": "Feature", "properties": { "fid": 138 }, "geometry": { "type": "Point", "coordinates": [23.222119, 50.716555] } },
-        { "type": "Feature", "properties": { "fid": 139 }, "geometry": { "type": "Point", "coordinates": [23.233668, 50.716445] } },
-        { "type": "Feature", "properties": { "fid": 140 }, "geometry": { "type": "Point", "coordinates": [23.235819, 50.716417] } },
-        { "type": "Feature", "properties": { "fid": 141 }, "geometry": { "type": "Point", "coordinates": [23.226974, 50.716769] } },
-        { "type": "Feature", "properties": { "fid": 142 }, "geometry": { "type": "Point", "coordinates": [23.227644, 50.716812] } },
-        { "type": "Feature", "properties": { "fid": 143 }, "geometry": { "type": "Point", "coordinates": [23.233586, 50.716923] } },
-        { "type": "Feature", "properties": { "fid": 144 }, "geometry": { "type": "Point", "coordinates": [23.226175, 50.717235] } },
-        { "type": "Feature", "properties": { "fid": 145 }, "geometry": { "type": "Point", "coordinates": [23.221868, 50.717548] } },
-        { "type": "Feature", "properties": { "fid": 146 }, "geometry": { "type": "Point", "coordinates": [23.233386, 50.717159] } },
-        { "type": "Feature", "properties": { "fid": 147 }, "geometry": { "type": "Point", "coordinates": [23.224676, 50.717666] } },
-        { "type": "Feature", "properties": { "fid": 148 }, "geometry": { "type": "Point", "coordinates": [23.225459, 50.717694] } },
-        { "type": "Feature", "properties": { "fid": 149 }, "geometry": { "type": "Point", "coordinates": [23.234521, 50.717526] } },
-        { "type": "Feature", "properties": { "fid": 150 }, "geometry": { "type": "Point", "coordinates": [23.235414, 50.717557] } },
-        { "type": "Feature", "properties": { "fid": 151 }, "geometry": { "type": "Point", "coordinates": [23.230513, 50.718221] } },
-        { "type": "Feature", "properties": { "fid": 152 }, "geometry": { "type": "Point", "coordinates": [23.230476, 50.718225] } },
-        { "type": "Feature", "properties": { "fid": 153 }, "geometry": { "type": "Point", "coordinates": [23.223692, 50.718708] } },
-        { "type": "Feature", "properties": { "fid": 154 }, "geometry": { "type": "Point", "coordinates": [23.221471, 50.718998] } },
-        { "type": "Feature", "properties": { "fid": 155 }, "geometry": { "type": "Point", "coordinates": [23.223669, 50.718943] } },
-        { "type": "Feature", "properties": { "fid": 156 }, "geometry": { "type": "Point", "coordinates": [23.223650, 50.719167] } },
-        { "type": "Feature", "properties": { "fid": 157 }, "geometry": { "type": "Point", "coordinates": [23.223136, 50.719346] } },
-        { "type": "Feature", "properties": { "fid": 158 }, "geometry": { "type": "Point", "coordinates": [23.224008, 50.719633] } },
-        { "type": "Feature", "properties": { "fid": 159 }, "geometry": { "type": "Point", "coordinates": [23.222841, 50.719747] } },
-        { "type": "Feature", "properties": { "fid": 160 }, "geometry": { "type": "Point", "coordinates": [23.222660, 50.719864] } },
-        { "type": "Feature", "properties": { "fid": 161 }, "geometry": { "type": "Point", "coordinates": [23.221626, 50.719924] } },
-        { "type": "Feature", "properties": { "fid": 162 }, "geometry": { "type": "Point", "coordinates": [23.229522, 50.720300] } },
-        { "type": "Feature", "properties": { "fid": 163 }, "geometry": { "type": "Point", "coordinates": [23.224003, 50.720596] } },
-        { "type": "Feature", "properties": { "fid": 164 }, "geometry": { "type": "Point", "coordinates": [23.236049, 50.720345] } },
-        { "type": "Feature", "properties": { "fid": 165 }, "geometry": { "type": "Point", "coordinates": [23.228958, 50.720681] } },
-        { "type": "Feature", "properties": { "fid": 166 }, "geometry": { "type": "Point", "coordinates": [23.236357, 50.721242] } },
-        { "type": "Feature", "properties": { "fid": 13501 }, "geometry": { "type": "Point", "coordinates": [23.254506, 50.737448] } },
-        { "type": "Feature", "properties": { "fid": 13502 }, "geometry": { "type": "Point", "coordinates": [23.254545, 50.737448] } },
-        { "type": "Feature", "properties": { "fid": 13503 }, "geometry": { "type": "Point", "coordinates": [23.255197, 50.737485] } }
+        { "type": "Feature", "properties": { "fid": 52 }, "geometry": { "type": "Point", "coordinates": [23.214025, 50.715266] } }
       ]
     };
 
@@ -3218,30 +3119,69 @@
         rodzaj_linii: props.Rodzaj_linii || props['Rodzaj linii'] || 'Brak danych',
         miejscowosc: props.Miejscowosc || props['Miejscowość'] || '-',
         ulica: props.Ulica || props['ulica'] || props['Ulica'] || '-',
-        notes: props.Notatki || props.notes || '', photo: props.photo || null, _new: feature._new || false
+        notes: props.Notatki || props.notes || '', photo: props.photo || null, _new: feature._new || false,
+        _deleted: feature._deleted || false
       };
     }
 
     const BASE_DATA = SOURCE_GEOJSON.features.map(parseFeature);
     const LS = { get: k => JSON.parse(localStorage.getItem(k) || 'null'), set: (k, v) => localStorage.setItem(k, JSON.stringify(v)), del: k => localStorage.removeItem(k) };
 
-    function buildLamps() {
-      const edits = LS.get('edits') || {}; const newL = LS.get('new_lamps') || []; const delIds = LS.get('deleted') || [];
-      const base = BASE_DATA.filter(l => !delIds.includes(l.id)).map(l => edits[l.id] ? { ...l, ...edits[l.id] } : l);
-      return [...base, ...newL];
-    }
-
-    let LAMPS = buildLamps();
-    let FL = [...LAMPS], selId = null, wyMode = false, addMode = false, addLatLng = null;
+    // Zmienne globalne
+    let LAMPS = [];
+    let FL = [], selId = null, wyMode = false, addMode = false, addLatLng = null;
     let sortCol = null, sortDir = 1;
     let newIdCounter = (LS.get('new_lamps') || []).length;
     let curLamp = null;
     let MAP, clusterGroup, markers = {}, activeLayer;
 
+    // ═══════════════════════════════════════════════════
+    // KOMUNIKACJA Z SERWEREM
+    // ═══════════════════════════════════════════════════
+    async function fetchLamps() {
+      try {
+        const response = await fetch(`${API_URL}/lamps`);
+        if (!response.ok) throw new Error('Błąd sieci');
+
+        const serverLamps = await response.json();
+
+        if (serverLamps.length === 0) {
+          console.log("Serwer jest pusty, używam lokalnych danych BASE_DATA");
+          LAMPS = BASE_DATA;
+        } else {
+          console.log("Pobrano dane z serwera!", serverLamps.length, "lamp.");
+          // Filtrujemy lampy, które mają flagę _deleted z serwera
+          LAMPS = serverLamps.filter(l => !l._deleted);
+        }
+
+        FL = [...LAMPS];
+
+        if (clusterGroup) {
+          clusterGroup.clearLayers();
+          markers = {};
+          const markersToAdd = LAMPS.map(l => addMarker(l, true));
+          clusterGroup.addLayers(markersToAdd);
+        }
+
+        updateSummary();
+        renderList();
+        renderTable();
+
+      } catch (error) {
+        console.error('Błąd pobierania lamp:', error);
+        toast('❌ Błąd połączenia z serwerem. Wczytuję dane awaryjne.');
+        LAMPS = BASE_DATA;
+        FL = [...LAMPS];
+        updateSummary(); renderList(); renderTable();
+      }
+    }
+
+    // ═══════════════════════════════════════════════════
+    // INICJALIZACJA MAPY
+    // ═══════════════════════════════════════════════════
     function initMap() {
       setTimeout(() => {
         let centerLat = 50.7225, centerLng = 23.253;
-        if (BASE_DATA.length > 0) { centerLat = BASE_DATA[0].lat; centerLng = BASE_DATA[0].lng; }
         MAP = L.map('map', { zoomControl: false, attributionControl: true }).setView([centerLat, centerLng], 14);
 
         const TILES = {
@@ -3262,8 +3202,6 @@
           }
         });
 
-        const markersToAdd = LAMPS.map(l => addMarker(l, true));
-        clusterGroup.addLayers(markersToAdd);
         MAP.addLayer(clusterGroup);
         clusterGroup.on('spiderfied unspiderfied animationend', () => setTimeout(updateSelPulse, 80));
         MAP.on('zoomend', () => setTimeout(updateSelPulse, 80));
@@ -3273,8 +3211,11 @@
         window.addEventListener('resize', () => { if (MAP) MAP.invalidateSize(); });
         setTimeout(() => MAP.invalidateSize(), 300);
 
-        if (LAMPS.length > 0) fitAll();
-        updateSummary(); renderList(); renderTable(); initRanges(); loadSettings();
+        fetchLamps().then(() => {
+          if (LAMPS.length > 0) fitAll();
+        });
+
+        initRanges(); loadSettings();
       }, 100);
     }
 
@@ -3332,17 +3273,56 @@
     function exitAddMode() { addMode = false; document.getElementById('nb-add').classList.remove('on'); document.getElementById('map').classList.remove('addmode'); document.getElementById('addtip').classList.remove('show'); }
     function onMapClick(e) { if (!addMode) return; addLatLng = e.latlng; document.getElementById('add-coords').textContent = `📍 ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`; document.getElementById('add-overlay').classList.add('open'); exitAddMode(); }
     function closeAdd(e) { if (!e || e.target === document.getElementById('add-overlay')) document.getElementById('add-overlay').classList.remove('open'); }
-    function confirmAdd() {
-      if (!addLatLng) return; newIdCounter++; const id = 'NEW-' + String(newIdCounter).padStart(3, '0');
-      const lamp = {
-        id, lat: addLatLng.lat, lng: addLatLng.lng, _new: true, nr_slupa: document.getElementById('a-nr').value, rodzaj_slupa: document.getElementById('a-rslupa').value,
-        liczba_opraw: parseInt(document.getElementById('a-lopraw').value) || 1, rodzaj_oprawy: document.getElementById('a-roprawy').value, model_oprawy: document.getElementById('a-model').value, stan_oprawy: document.getElementById('a-stoprawy').value,
-        stan_slupa: document.getElementById('a-sslupa').value, wysokosc_slupa: parseFloat(document.getElementById('a-h').value) || 0, kat_wysiegnika: parseFloat(document.getElementById('a-kat').value) || 0, dlugosc_wysiegnika: parseFloat(document.getElementById('a-dl').value) || 0,
-        szafa_oswietleniowa: document.getElementById('a-szafa').value, rodzaj_linii: document.getElementById('a-linia').value, miejscowosc: document.getElementById('a-miejsc').value,
-        ulica: document.getElementById('a-ulica').value || '-', notes: document.getElementById('a-notes').value, photo: null
+
+    // ═══════════════════════════════════════════════════
+    // DODAWANIE LAMPY NA SERWER (POST)
+    // ═══════════════════════════════════════════════════
+    async function confirmAdd() {
+      if (!addLatLng) return;
+      newIdCounter++;
+      const id = 'NEW-' + String(newIdCounter).padStart(3, '0');
+
+      const newLamp = {
+        id, lat: addLatLng.lat, lng: addLatLng.lng, _new: true,
+        nr_slupa: document.getElementById('a-nr').value,
+        rodzaj_slupa: document.getElementById('a-rslupa').value,
+        liczba_opraw: parseInt(document.getElementById('a-lopraw').value) || 1,
+        rodzaj_oprawy: document.getElementById('a-roprawy').value,
+        model_oprawy: document.getElementById('a-model').value,
+        stan_oprawy: document.getElementById('a-stoprawy').value,
+        stan_slupa: document.getElementById('a-sslupa').value,
+        wysokosc_slupa: parseFloat(document.getElementById('a-h').value) || 0,
+        kat_wysiegnika: parseFloat(document.getElementById('a-kat').value) || 0,
+        dlugosc_wysiegnika: parseFloat(document.getElementById('a-dl').value) || 0,
+        szafa_oswietleniowa: document.getElementById('a-szafa').value,
+        rodzaj_linii: document.getElementById('a-linia').value,
+        miejscowosc: document.getElementById('a-miejsc').value,
+        ulica: document.getElementById('a-ulica').value || '-',
+        notes: document.getElementById('a-notes').value,
+        photo: null
       };
-      const newLamps = LS.get('new_lamps') || []; newLamps.push(lamp); LS.set('new_lamps', newLamps);
-      LAMPS = buildLamps(); FL = [...LAMPS]; addMarker(lamp); closeAdd(); updateSummary(); renderList(); renderTable(); toast('✅ Punkt ' + id + ' dodany na mapie!');
+
+      try {
+        const response = await fetch(`${API_URL}/lamps`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(newLamp)
+        });
+
+        if (!response.ok) throw new Error('Błąd zapisu na serwerze');
+
+        LAMPS.push(newLamp);
+        FL = [...LAMPS];
+        addMarker(newLamp);
+        closeAdd();
+        updateSummary();
+        renderList();
+        renderTable();
+        toast('✅ Punkt ' + id + ' dodany i zapisany na serwerze!');
+      } catch (error) {
+        console.error('Błąd:', error);
+        toast('❌ Nie udało się zapisać na serwerze. Sprawdź czy działa.');
+      }
     }
 
     function initRanges() { updateRange('h'); }
@@ -3394,10 +3374,9 @@
       document.getElementById('nb-wy').classList.remove('on'); updateRange('h'); applyFilters(); toast('↺ Filtry zresetowane');
     }
 
-    function updateSummary(rebuild = true) {
-      if (rebuild) { LAMPS = buildLamps(); }
+    function updateSummary() {
       const n = LAMPS.length;
-      const led = LAMPS.filter(l => l.rodzaj_oprawy === 'LED').length, sod = LAMPS.filter(l => l.rodzaj_oprawy === 'Sodowa').length, bad = LAMPS.filter(l => l.stan_oprawy === 'zły' || l.stan_slupa === 'zły').length, nw = (LS.get('new_lamps') || []).length;
+      const led = LAMPS.filter(l => l.rodzaj_oprawy === 'LED').length, sod = LAMPS.filter(l => l.rodzaj_oprawy === 'Sodowa').length, bad = LAMPS.filter(l => l.stan_oprawy === 'zły' || l.stan_slupa === 'zły').length, nw = LAMPS.filter(l => l._new).length;
       const anyFilter = viewportFilterOn || wyMode || FL.length < n;
       const flLed = anyFilter ? FL.filter(l => l.rodzaj_oprawy === 'LED').length : led, flSod = anyFilter ? FL.filter(l => l.rodzaj_oprawy === 'Sodowa').length : sod, flBad = anyFilter ? FL.filter(l => l.stan_oprawy === 'zły' || l.stan_slupa === 'zły').length : bad, flNew = anyFilter ? FL.filter(l => l._new).length : nw;
       const fmt = (vis, tot) => anyFilter ? vis + '/' + tot : String(tot);
@@ -3409,7 +3388,7 @@
     function renderList() {
       const listEl = document.getElementById('lamplist');
       const parentEl = listEl.parentElement;
-      const st = parentEl.scrollTop; // Zachowaj pozycję scrolla
+      const st = parentEl.scrollTop;
 
       const limit = 150; const data = FL.slice(0, limit);
       let html = data.map(l => {
@@ -3430,14 +3409,13 @@
       if (FL.length > limit) html += `<div style="padding:15px 10px;text-align:center;font-size:11px;color:var(--t3)">Ukryto ${FL.length - limit} wyników. Użyj filtrów, aby zawęzić wyniki.</div>`;
 
       listEl.innerHTML = html;
-      parentEl.scrollTop = st; // Przywróć pozycję
+      parentEl.scrollTop = st;
     }
 
     function renderTable() {
       const wrap = document.querySelector('.twrap');
-      const st = wrap ? wrap.scrollTop : 0; // Zachowaj pozycję scrolla
+      const st = wrap ? wrap.scrollTop : 0;
 
-      const edits = LS.get('edits') || {};
       document.getElementById('tbl-cnt').textContent = '(' + FL.length + ')';
       let d = [...FL];
       if (sortCol) d.sort((a, b) => typeof a[sortCol] === 'string' ? a[sortCol].localeCompare(b[sortCol]) * sortDir : (a[sortCol] - b[sortCol]) * sortDir);
@@ -3456,13 +3434,13 @@
       <td><div class="tdst"><div class="tdstd" style="background:${COND_C[l.stan_oprawy]}"></div>${l.stan_oprawy}</div></td>
       <td><div class="tdst"><div class="tdstd" style="background:${COND_C[l.stan_slupa]}"></div>${l.stan_slupa}</div></td>
       <td>${l.wysokosc_slupa}m</td><td>${l.szafa_oswietleniowa}</td><td>${l.miejscowosc}</td>
-      <td style="font-size:9px;color:var(--t3)">${l._new ? '🆕' : edits[l.id] ? '✏️' : '—'}</td>
+      <td style="font-size:9px;color:var(--t3)">${l._new ? '🆕' : '—'}</td>
     </tr>`;
       }).join('');
       if (d.length > limit) html += `<tr><td colspan="11" style="text-align:center;padding:15px;color:var(--t3);font-size:11px">Pokazuję pierwsze ${limit} z ${d.length} wyników. Użyj filtrów.</td></tr>`;
 
       document.getElementById('tbl-body').innerHTML = html;
-      if (wrap) wrap.scrollTop = st; // Przywróć pozycję
+      if (wrap) wrap.scrollTop = st;
     }
 
     function sortTbl(col) { if (sortCol === col) sortDir *= -1; else { sortCol = col; sortDir = 1; } renderTable(); }
@@ -3532,7 +3510,11 @@
     }
     function unsavedDiscard() { clearDirty(); clearUstDirty(); document.getElementById('unsaved-dialog').classList.remove('open'); if (_pendingCloseAction) { _pendingCloseAction(); _pendingCloseAction = null; } }
     function unsavedContinue() { document.getElementById('unsaved-dialog').classList.remove('open'); _pendingCloseAction = null; }
-    function unsavedSave() { saveEdit(); clearDirty(); document.getElementById('unsaved-dialog').classList.remove('open'); if (_pendingCloseAction) { _pendingCloseAction(); _pendingCloseAction = null; } }
+
+    // ═══════════════════════════════════════════════════
+    // EDYCJA LAMPY NA SERWERZE (PUT & DELETE)
+    // ═══════════════════════════════════════════════════
+    async function unsavedSave() { await saveEdit(); clearDirty(); document.getElementById('unsaved-dialog').classList.remove('open'); if (_pendingCloseAction) { _pendingCloseAction(); _pendingCloseAction = null; } }
     function closeDet(e) { if (!e || e.target === document.getElementById('det-overlay')) requestClose(() => document.getElementById('det-overlay').classList.remove('open')); }
 
     function fillEdit(l) {
@@ -3542,25 +3524,79 @@
       g('e-kat').value = l.kat_wysiegnika || 0; g('e-dl').value = l.dlugosc_wysiegnika || 0; g('e-szafa').value = l.szafa_oswietleniowa || ''; g('e-linia').value = l.rodzaj_linii || 'Brak danych';
       g('e-miejsc').value = l.miejscowosc || ''; g('e-ulica').value = l.ulica || ''; g('e-notes').value = l.notes || ''; g('e-status').style.display = 'none';
     }
-    function saveEdit() {
-      if (!curLamp) return; const g = (id) => document.getElementById(id).value;
+    async function saveEdit() {
+      if (!curLamp) return;
+      const g = (id) => document.getElementById(id).value;
+
+      // Przygotowujemy dane, dołączając obecne współrzędne z obiektu curLamp
       const updated = {
-        nr_slupa: g('e-nr'), rodzaj_slupa: g('e-rslupa'), liczba_opraw: parseInt(g('e-lopraw')) || 1, rodzaj_oprawy: g('e-roprawy'), model_oprawy: g('e-model'), stan_oprawy: g('e-stoprawy'), stan_slupa: g('e-sslupa'),
-        wysokosc_slupa: parseFloat(g('e-h')) || 0, kat_wysiegnika: parseFloat(g('e-kat')) || 0, dlugosc_wysiegnika: parseFloat(g('e-dl')) || 0, szafa_oswietleniowa: g('e-szafa'), rodzaj_linii: g('e-linia'), miejscowosc: g('e-miejsc'), ulica: g('e-ulica'), notes: g('e-notes')
+        lat: curLamp.lat, // KLUCZOWE: zachowujemy szerokość
+        lng: curLamp.lng, // KLUCZOWE: zachowujemy długość
+        nr_slupa: g('e-nr'),
+        rodzaj_slupa: g('e-rslupa'),
+        liczba_opraw: parseInt(g('e-lopraw')) || 1,
+        rodzaj_oprawy: g('e-roprawy'),
+        model_oprawy: g('e-model'),
+        stan_oprawy: g('e-stoprawy'),
+        stan_slupa: g('e-sslupa'),
+        wysokosc_slupa: parseFloat(g('e-h')) || 0,
+        kat_wysiegnika: parseFloat(g('e-kat')) || 0,
+        dlugosc_wysiegnika: parseFloat(g('e-dl')) || 0,
+        szafa_oswietleniowa: g('e-szafa'),
+        rodzaj_linii: g('e-linia'),
+        miejscowosc: g('e-miejsc'),
+        ulica: g('e-ulica'),
+        notes: g('e-notes')
       };
-      if (curLamp._new) { const arr = LS.get('new_lamps') || []; const i = arr.findIndex(l => l.id === curLamp.id); if (i >= 0) { arr[i] = { ...arr[i], ...updated }; LS.set('new_lamps', arr); } }
-      else { const edits = LS.get('edits') || {}; edits[curLamp.id] = { ...(edits[curLamp.id] || {}), ...updated }; LS.set('edits', edits); }
-      LAMPS = buildLamps(); curLamp = { ...curLamp, ...updated }; const l = LAMPS.find(x => x.id === curLamp.id); if (l) rebuildMarker(l);
-      document.getElementById('e-status').style.display = 'block'; document.getElementById('det-name').textContent = updated.miejscowosc + ' — Nr słupa: ' + updated.nr_slupa;
-      clearDirty(); setTimeout(() => document.getElementById('e-status').style.display = 'none', 2500); applyFilters(); updateSummary(); toast('💾 Zapisano: ' + curLamp.id);
+
+      try {
+        const response = await fetch(`${API_URL}/lamps/${curLamp.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updated)
+        });
+
+        if (!response.ok) throw new Error('Błąd serwera');
+
+        curLamp = { ...curLamp, ...updated };
+        const idx = LAMPS.findIndex(x => x.id === curLamp.id);
+        if (idx > -1) LAMPS[idx] = curLamp;
+
+        rebuildMarker(curLamp);
+
+        document.getElementById('e-status').style.display = 'block';
+        document.getElementById('det-name').textContent = updated.miejscowosc + ' — Nr słupa: ' + updated.nr_slupa;
+        clearDirty();
+        setTimeout(() => document.getElementById('e-status').style.display = 'none', 2500);
+        applyFilters(); updateSummary();
+        toast('💾 Zapisano na serwerze: ' + curLamp.id);
+
+      } catch (error) {
+        console.error('Błąd zapisu:', error);
+        toast('❌ Błąd zapisu na serwerze');
+      }
     }
-    function deleteLamp() {
-      if (!curLamp || !confirm(`Usunąć ${curLamp.id}?`)) return; const id = curLamp.id;
-      if (curLamp._new) { LS.set('new_lamps', (LS.get('new_lamps') || []).filter(l => l.id !== id)); }
-      else { const del = LS.get('deleted') || []; del.push(id); LS.set('deleted', del); const edits = LS.get('edits') || {}; delete edits[id]; LS.set('edits', edits); }
-      if (markers[id]) { clusterGroup.removeLayer(markers[id]); delete markers[id]; }
-      LAMPS = buildLamps(); FL = FL.filter(l => l.id !== id); document.getElementById('det-overlay').classList.remove('open'); updateSummary(); renderList(); renderTable(); toast('🗑 Usunięto: ' + id);
+
+    async function deleteLamp() {
+      if (!curLamp || !confirm(`Usunąć ${curLamp.id}?`)) return;
+      const id = curLamp.id;
+
+      try {
+        const response = await fetch(`${API_URL}/lamps/${id}`, { method: 'DELETE' });
+        if (!response.ok) throw new Error('Błąd serwera');
+
+        if (markers[id]) { clusterGroup.removeLayer(markers[id]); delete markers[id]; }
+        LAMPS = LAMPS.filter(l => l.id !== id); FL = FL.filter(l => l.id !== id);
+        document.getElementById('det-overlay').classList.remove('open');
+        updateSummary(); renderList(); renderTable();
+        toast('🗑 Usunięto z serwera: ' + id);
+
+      } catch (error) {
+        console.error('Błąd usuwania:', error);
+        toast('❌ Błąd usuwania na serwerze');
+      }
     }
+
     function submitUsterka() {
       clearUstDirty(); const types = [...document.querySelectorAll('.uchip.on')].map(c => c.textContent.trim()); if (!types.length) { toast('⚠️ Wybierz typ usterki'); return; }
       const rep = { id: curLamp.id, loc: curLamp.miejscowosc, lat: curLamp.lat, lng: curLamp.lng, types, desc: document.getElementById('u-desc').value, ts: new Date().toISOString() };
@@ -3727,20 +3763,41 @@
     function removePulse(id) { if (_pulseEls[id]) { _pulseEls[id].classList.remove('selpulse'); delete _pulseEls[id]; } }
     function fitSelected() { if (!selectedIds.size) { toast('⚠️ Brak zaznaczonych punktów'); return; } const pts = [...selectedIds].map(id => { const l = LAMPS.find(x => x.id === id); return l ? L.latLng(l.lat, l.lng) : null; }).filter(Boolean); if (pts.length) MAP.fitBounds(L.latLngBounds(pts), { padding: [40, 40], maxZoom: 18 }); }
 
-    function applyBulkEdit() {
+    // ═══════════════════════════════════════════════════
+    // EDYCJA MASOWA NA SERWERZE (PUT)5imvj*-S/WC?*PT
+    // ═══════════════════════════════════════════════════
+    async function applyBulkEdit() {
       if (!selectedIds.size) return; const changes = {}; const v = (id) => document.getElementById(id).value.trim();
       if (v('bp-roprawy')) changes.rodzaj_oprawy = v('bp-roprawy'); if (v('bp-stoprawy')) changes.stan_oprawy = v('bp-stoprawy'); if (v('bp-sslupa')) changes.stan_slupa = v('bp-sslupa'); if (v('bp-linia')) changes.rodzaj_linii = v('bp-linia');
       if (v('bp-rslupa')) changes.rodzaj_slupa = v('bp-rslupa'); if (v('bp-szafa')) changes.szafa_oswietleniowa = v('bp-szafa'); if (v('bp-miejsc')) changes.miejscowosc = v('bp-miejsc'); if (v('bp-model')) changes.model_oprawy = v('bp-model'); if (v('bp-ulica')) changes.ulica = v('bp-ulica');
       if (!Object.keys(changes).length) { toast('⚠️ Nie wybrano żadnych zmian'); return; }
-      const edits = LS.get('edits') || {}; const newLArr = LS.get('new_lamps') || []; let count = 0;
-      selectedIds.forEach(id => {
-        const lamp = LAMPS.find(l => l.id === id); if (!lamp) return;
-        if (lamp._new) { const i = newLArr.findIndex(l => l.id === id); if (i >= 0) { newLArr[i] = { ...newLArr[i], ...changes }; count++; } }
-        else { edits[id] = { ...(edits[id] || {}), ...changes }; count++; }
-      });
-      LS.set('edits', edits); LS.set('new_lamps', newLArr); LAMPS = buildLamps();
-      selectedIds.forEach(id => { removePulse(id); const l = LAMPS.find(x => x.id === id); if (l) rebuildMarker(l); });
-      const changed = count; clearSelection(); applyFilters(); updateSummary(); toast('✅ Zastosowano zmiany do ' + changed + ' punktów');
+
+      try {
+        const response = await fetch(`${API_URL}/lamps-bulk`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids: Array.from(selectedIds), changes })
+        });
+
+        if (!response.ok) throw new Error('Błąd serwera przy edycji masowej');
+
+        let count = 0;
+        selectedIds.forEach(id => {
+          const idx = LAMPS.findIndex(l => l.id === id);
+          if (idx > -1) {
+            LAMPS[idx] = { ...LAMPS[idx], ...changes };
+            count++;
+          }
+        });
+
+        selectedIds.forEach(id => { removePulse(id); const l = LAMPS.find(x => x.id === id); if (l) rebuildMarker(l); });
+        clearSelection(); applyFilters(); updateSummary();
+        toast('✅ Zastosowano zmiany na serwerze do ' + count + ' punktów');
+
+      } catch (error) {
+        console.error('Błąd edycji masowej:', error);
+        toast('❌ Błąd zapisu na serwerze');
+      }
     }
 
     let viewportFilterOn = false;
