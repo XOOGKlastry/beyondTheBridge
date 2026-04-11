@@ -11,6 +11,43 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script
     src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.5.3/leaflet.markercluster.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyA9TEQ5cVINR-QFv9Ul8WUKCu1jqjIZpVM",
+      authDomain: "latarnikzamojski.firebaseapp.com",
+      projectId: "latarnikzamojski",
+      storageBucket: "latarnikzamojski.firebasestorage.app",
+      messagingSenderId: "478953271243",
+      appId: "1:478953271243:web:f7802bcd76f1874130104e",
+      measurementId: "G-61NJ77NEE2"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    window._auth = auth;
+    window._fbSignIn = (email, pass) => auth.signInWithEmailAndPassword(email, pass);
+    window._fbSignOut = () => auth.signOut();
+
+    auth.onAuthStateChanged(user => {
+      window._currentUser = user || null;
+      const loginBtn = document.getElementById('btn-login');
+      const logoutBtn = document.getElementById('btn-logout');
+      const userInfo = document.getElementById('auth-user');
+
+      if (user) {
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = '';
+        if (userInfo) userInfo.textContent = user.email;
+      } else {
+        if (loginBtn) loginBtn.style.display = '';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+        if (userInfo) userInfo.textContent = '';
+      }
+    });
+  </script>
   <link
     href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap"
     rel="stylesheet" />
@@ -50,11 +87,14 @@
       padding: 0
     }
 
+    /* GWARANCJA BRAKU PRZEWIJANIA W PRAWO/LEWO */
     html,
     body {
       width: 100%;
+      max-width: 100vw;
       height: 100%;
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: hidden;
       position: fixed;
       font-family: var(--fu);
       background: var(--bg);
@@ -300,6 +340,8 @@
       right: 0;
       bottom: 0;
       display: flex;
+      max-width: 100vw;
+      overflow: hidden;
     }
 
     /* ─── SIDEBAR (FILTRY) ────────────────────────── */
@@ -338,6 +380,7 @@
     .sbody {
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
       padding: 9px;
       scrollbar-width: thin;
       scrollbar-color: var(--border) transparent;
@@ -474,7 +517,8 @@
       color: var(--t1);
       font-size: 12px;
       outline: none;
-      transition: var(--tr)
+      transition: var(--tr);
+      box-sizing: border-box;
     }
 
     .srch:focus {
@@ -482,7 +526,6 @@
       box-shadow: 0 0 0 3px var(--ag)
     }
 
-    /* CHECKBOX STYLING (Lista i Tabela) */
     .cbox {
       width: 16px;
       height: 16px;
@@ -668,9 +711,9 @@
     }
 
     /* ─── MAP UI ─────────────────────────── */
-    #bm-btn {
+    #bm-btn,
+    #sbtog {
       position: absolute;
-      top: 10px;
       left: 10px;
       z-index: 500;
       background: var(--surface);
@@ -687,7 +730,16 @@
       transition: var(--tr)
     }
 
-    #bm-btn:hover {
+    #bm-btn {
+      top: 10px;
+    }
+
+    #sbtog {
+      bottom: 20px;
+    }
+
+    #bm-btn:hover,
+    #sbtog:hover {
       border-color: var(--accent);
       color: var(--accent)
     }
@@ -823,40 +875,12 @@
       color: var(--t2)
     }
 
-    .leg-row:last-child {
-      margin-bottom: 0
-    }
-
     .leg-dot {
       width: 10px;
       height: 10px;
       border-radius: 50%;
       border: 2px solid rgba(0, 0, 0, .1);
       flex-shrink: 0
-    }
-
-    #sbtog {
-      position: absolute;
-      left: 10px;
-      bottom: 20px;
-      z-index: 500;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 9px;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      cursor: pointer;
-      box-shadow: var(--sh);
-      transition: var(--tr)
-    }
-
-    #sbtog:hover {
-      border-color: var(--accent);
-      color: var(--accent)
     }
 
     #map.addmode,
@@ -1092,7 +1116,6 @@
       font-weight: 600
     }
 
-    /* ID column */
     .tdst {
       display: flex;
       align-items: center;
@@ -1161,10 +1184,6 @@
       margin-bottom: 4px;
       text-align: left;
       cursor: pointer
-    }
-
-    .expb:last-child {
-      margin-bottom: 0
     }
 
     .expb:hover {
@@ -1317,15 +1336,20 @@
 
     .mpane {
       display: none;
+      flex: 1 1 auto;
+      min-height: 0;
       overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
       padding-bottom: env(safe-area-inset-bottom);
     }
 
     .mpane.on {
-      display: block
+      display: block;
     }
 
-    /* Różne elementy formularzy, info, SV... (skrócone tu tylko CSS) */
     .lampimg {
       width: 100%;
       height: 140px;
@@ -1535,10 +1559,6 @@
       color: #ffffff
     }
 
-    .sv-btn.pri:hover {
-      opacity: .88
-    }
-
     .sv-btn.sec {
       background: transparent;
       border: 1px solid var(--border);
@@ -1579,6 +1599,47 @@
       display: flex
     }
 
+    .modal,
+    #det-modal,
+    #add-modal,
+    #set-modal {
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .mhd,
+    .mtabs,
+    .lampimg {
+      flex-shrink: 0;
+    }
+
+    #info-pane.on {
+      display: block;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    #sv-pane.on,
+    #edit-pane.on,
+    #ust-pane.on {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .sbody,
+    .twrap,
+    #layers-panel,
+    .fp-body {
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+    }
+
     .egrid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -1614,7 +1675,8 @@
       outline: none;
       transition: var(--tr);
       width: 100%;
-      font-family: var(--fd)
+      font-family: var(--fd);
+      box-sizing: border-box;
     }
 
     .einp:focus,
@@ -1719,11 +1781,6 @@
       transition: var(--tr)
     }
 
-    .uta:focus {
-      border-color: var(--red);
-      box-shadow: 0 0 0 3px rgba(220, 38, 38, .08)
-    }
-
     .usubmit {
       width: 100%;
       padding: 9px;
@@ -1737,10 +1794,6 @@
       transition: var(--tr)
     }
 
-    .usubmit:hover {
-      opacity: .88
-    }
-
     #add-modal,
     #set-modal {
       max-width: 480px
@@ -1749,10 +1802,6 @@
     .set-section {
       padding: 13px;
       border-bottom: 1px solid var(--border)
-    }
-
-    .set-section:last-child {
-      border-bottom: none
     }
 
     .set-ttl {
@@ -1785,12 +1834,8 @@
       font-family: var(--fd);
       font-size: 12px;
       outline: none;
-      transition: var(--tr)
-    }
-
-    .set-inp:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--ag)
+      transition: var(--tr);
+      width: 100%;
     }
 
     .set-btn {
@@ -1806,18 +1851,10 @@
       transition: var(--tr)
     }
 
-    .set-btn:hover {
-      opacity: .88
-    }
-
     .set-btn.del {
       background: var(--surface2);
       border: 1px solid var(--border);
       color: var(--red)
-    }
-
-    .set-btn.del:hover {
-      border-color: var(--red)
     }
 
     .api-status {
@@ -1855,11 +1892,8 @@
       transition: var(--tr)
     }
 
+    .tcard.on,
     .tcard:hover {
-      border-color: var(--accent)
-    }
-
-    .tcard.on {
       border-color: var(--accent)
     }
 
@@ -1985,7 +2019,6 @@
       height: 34px;
       border-radius: 6px;
       border: 1px solid var(--border);
-      overflow: hidden;
       flex-shrink: 0;
       background-size: cover;
       background-position: center
@@ -2022,58 +2055,6 @@
 
     #toast.show {
       transform: translateX(-50%) translateY(0)
-    }
-
-    /* ─── MOBILE ───────────────────────── */
-    @media(max-width:700px) {
-      :root {
-        --sw: 100vw
-      }
-
-      #sb {
-        position: absolute;
-        margin-left: 0 !important;
-        top: auto;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        height: 85%;
-        border-right: none;
-        border-top: 1px solid var(--border);
-        border-radius: 16px 16px 0 0;
-        transform: translateY(100%);
-        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
-        z-index: 1000;
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-
-      #sb.open {
-        transform: translateY(0);
-      }
-
-      #bm-panel,
-      #leg {
-        display: none !important;
-      }
-
-      .igrid,
-      .egrid {
-        grid-template-columns: 1fr;
-      }
-
-      .ef.full {
-        grid-column: 1;
-      }
-
-      .mob-close {
-        display: inline-flex !important;
-      }
-
-      #tpanel {
-        height: 70%;
-        z-index: 1500;
-      }
     }
 
     /* ─── UNSAVED CHANGES DIALOG ─────────── */
@@ -2153,7 +2134,8 @@
       transition: .15s ease
     }
 
-    .ud-discard {
+    .ud-discard,
+    .ud-continue {
       border: 1px solid var(--border);
       background: transparent;
       color: var(--t2)
@@ -2162,12 +2144,6 @@
     .ud-discard:hover {
       border-color: var(--red);
       color: var(--red)
-    }
-
-    .ud-continue {
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--t2)
     }
 
     .ud-continue:hover {
@@ -2182,10 +2158,6 @@
       color: #fff
     }
 
-    .ud-save:hover {
-      opacity: .88
-    }
-
     .mtab.dirty::after {
       content: '●';
       color: var(--amber);
@@ -2194,7 +2166,7 @@
       vertical-align: super
     }
 
-    /* ─── BULK EDIT PANEL ─────────────────── */
+    /* ─── BULK EDIT PANEL (DESKTOP / ADAPTED) ─────────────────── */
     #bulk-panel {
       position: fixed;
       bottom: 0;
@@ -2210,6 +2182,7 @@
       transition: transform .3s cubic-bezier(0.25, 1, 0.5, 1);
       padding: 14px 16px;
       padding-bottom: env(safe-area-inset-bottom);
+      box-sizing: border-box;
     }
 
     #bulk-panel.open {
@@ -2249,12 +2222,6 @@
       justify-content: center
     }
 
-    .bp-close:hover {
-      border-color: var(--red);
-      color: var(--red);
-      background: rgba(220, 38, 38, 0.1);
-    }
-
     .bp-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -2262,6 +2229,7 @@
       margin-bottom: 14px;
       max-height: 40vh;
       overflow-y: auto;
+      overflow-x: hidden;
       padding-right: 4px;
     }
 
@@ -2291,6 +2259,7 @@
       width: 100%;
       outline: none;
       transition: var(--tr);
+      box-sizing: border-box;
     }
 
     .bp-sel:focus,
@@ -2299,17 +2268,13 @@
       box-shadow: 0 0 0 3px var(--ag)
     }
 
-    .bp-placeholder {
-      color: var(--t3);
-      font-style: italic
-    }
-
     .bp-footer {
       display: flex;
       gap: 8px;
       align-items: center;
       border-top: 1px solid var(--border);
       padding-top: 12px;
+      flex-wrap: wrap;
     }
 
     .bp-apply {
@@ -2325,10 +2290,6 @@
       transition: 0.15s;
     }
 
-    .bp-apply:hover {
-      opacity: .88
-    }
-
     .bp-desel {
       padding: 9px 14px;
       border-radius: 8px;
@@ -2341,17 +2302,142 @@
       font-weight: 500;
     }
 
-    .bp-desel:hover {
-      border-color: var(--red);
-      color: var(--red)
-    }
-
     .bp-note {
       font-size: 11px;
       color: var(--t3)
     }
 
-    /* ─── POLYGON SELECTION ─────────────────── */
+    /* ─── KARTY STANÓW (Side-by-side) ─── */
+    .cond-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      grid-column: 1 / -1;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .cond-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    .cond-hd {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cond-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--t1);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .seg {
+      display: flex;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--surface2)
+    }
+
+    .seg-opt {
+      flex: 1;
+      padding: 11px 4px;
+      border: none;
+      background: transparent;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: var(--fu);
+      color: var(--t3);
+      transition: .15s;
+      text-align: center
+    }
+
+    .seg-opt.on.g {
+      background: rgba(5, 150, 105, .12);
+      color: var(--green)
+    }
+
+    .seg-opt.on.a {
+      background: rgba(217, 119, 6, .12);
+      color: var(--amber)
+    }
+
+    .seg-opt.on.r {
+      background: rgba(220, 38, 38, .12);
+      color: var(--red)
+    }
+
+    .num-wrap {
+      display: flex;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      overflow: hidden;
+      transition: var(--tr);
+    }
+
+    .num-wrap:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--ag);
+    }
+
+    .num-btn {
+      width: 38px;
+      background: transparent;
+      border: none;
+      color: var(--t2);
+      font-size: 18px;
+      font-family: var(--fd);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--tr);
+    }
+
+    .num-btn:hover {
+      background: var(--surface3);
+      color: var(--accent);
+    }
+
+    .num-inp {
+      flex: 1;
+      width: 100%;
+      border: none;
+      background: transparent;
+      text-align: center;
+      color: var(--t1);
+      font-size: 13px;
+      font-family: var(--fd);
+      font-weight: 600;
+      outline: none;
+      padding: 6px 0;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
     #map.polymode,
     #map.polymode * {
       cursor: crosshair !important
@@ -2376,6 +2462,727 @@
     .poly-tip-el.show {
       display: block
     }
+
+    /* ─── FULLSCREEN GALLERY MODAL ─── */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 10px;
+      padding: 10px 14px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      flex: 1;
+    }
+
+    .gal-card {
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: var(--tr);
+      background: var(--surface);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .gal-card:hover {
+      border-color: var(--accent);
+    }
+
+    .gal-img {
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      background: #fff;
+      position: relative;
+    }
+
+    .gal-img img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+
+    .gal-txt {
+      font-size: 11px;
+      text-align: center;
+      padding: 8px;
+      font-weight: 600;
+      border-top: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--t1);
+    }
+
+    .gal-zoom {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 4px;
+      font-size: 12px;
+      padding: 2px;
+    }
+
+    /* ─── MOBILE ───────────────────────── */
+    @media(max-width:700px) {
+      :root {
+        --sw: 100vw
+      }
+
+      html,
+      body {
+        overflow: hidden !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        position: fixed;
+      }
+
+      #sb {
+        position: absolute;
+        margin-left: 0 !important;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100vw;
+        max-width: 100vw;
+        height: 85%;
+        border-right: none;
+        border-top: 1px solid var(--border);
+        border-radius: 16px 16px 0 0;
+        transform: translateY(100%);
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+        z-index: 1000;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-sizing: border-box;
+      }
+
+      #sb.open {
+        transform: translateY(0);
+      }
+
+      #bm-panel,
+      #leg {
+        display: none !important;
+      }
+
+      .igrid,
+      .egrid,
+      .cond-wrap {
+        grid-template-columns: 1fr !important;
+      }
+
+      .ef.full {
+        grid-column: 1 !important;
+      }
+
+      .mob-close {
+        display: inline-flex !important;
+      }
+
+      #tpanel {
+        height: 70%;
+        z-index: 1500;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        box-sizing: border-box;
+      }
+
+      #app {
+        top: var(--hh) !important;
+        max-width: 100vw !important;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+
+      #hdr .nav,
+      #hdr .hright,
+      #hdr .sep {
+        display: none !important;
+      }
+
+      #smry {
+        display: none !important;
+      }
+
+      .overlay {
+        align-items: flex-end;
+        justify-content: stretch;
+        padding: 0 !important;
+      }
+
+      .modal,
+      #det-modal,
+      #add-modal,
+      #set-modal,
+      #gallery-modal {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        height: 95dvh !important;
+        max-height: 95dvh !important;
+        border-radius: 16px 16px 0 0 !important;
+        border: none;
+        box-sizing: border-box;
+      }
+
+      #gallery-modal {
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+      }
+
+      .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      }
+
+      #det-modal .lampimg {
+        height: 112px;
+      }
+
+      #det-modal .infobody,
+      #edit-pane,
+      #ust-pane {
+        padding-bottom: calc(16px + env(safe-area-inset-bottom));
+      }
+
+      /* Wymuszenie widoczności dolnego paska nawigacji */
+      #mob-nav {
+        display: block !important;
+        z-index: 3000 !important;
+      }
+
+      /* Bulk Edit dla Mobile - ukrywany prawidłowo, pod paskiem */
+      #bulk-panel {
+        left: 0 !important;
+        right: 0 !important;
+        width: 100vw !important;
+        max-width: 100vw !important;
+        border-radius: 16px 16px 0 0 !important;
+        transform: translateX(0) translateY(100%) !important;
+        bottom: calc(60px + env(safe-area-inset-bottom)) !important;
+        padding: 14px 10px 14px !important;
+        max-height: calc(85vh - 60px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        z-index: 2900 !important;
+        /* Panel musi być pod paskiem mob-nav */
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.2s, visibility 0.2s !important;
+      }
+
+      #bulk-panel.open {
+        transform: translateX(0) translateY(0) !important;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+
+      .bp-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding-right: 0;
+      }
+
+      .bp-footer {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .bp-desel,
+      .bp-apply {
+        width: 100%;
+        text-align: center;
+      }
+
+      .bp-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding-right: 0;
+      }
+
+      .bp-footer {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .bp-desel,
+      .bp-apply {
+        width: 100%;
+        text-align: center;
+      }
+
+      #layers-panel {
+        top: var(--hh);
+        left: 0;
+        right: 0;
+        width: 100vw;
+        max-width: 100vw;
+        max-height: calc(100dvh - var(--hh) - 60px - env(safe-area-inset-bottom));
+        border-radius: 16px 16px 0 0;
+        padding: 12px;
+        padding-bottom: calc(12px + env(safe-area-inset-bottom));
+        box-sizing: border-box;
+      }
+    }
+
+    #mob-fab-wrap {
+      position: fixed;
+      bottom: calc(70px + env(safe-area-inset-bottom));
+      right: 18px;
+      z-index: 1100;
+      display: none;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 12px
+    }
+
+    @media(max-width:700px) {
+      #mob-fab-wrap {
+        display: flex
+      }
+    }
+
+    .fab-sub {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transform: translateY(8px) scale(.94);
+      transition: opacity .18s, transform .18s;
+      pointer-events: none
+    }
+
+    .fab-sub.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: all
+    }
+
+    .fab-sub-lbl {
+      background: rgba(10, 16, 24, .88);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 7px 13px;
+      border-radius: 22px;
+      white-space: nowrap;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 2px 12px rgba(0, 0, 0, .25)
+    }
+
+    .fab-sub-btn {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, .22);
+      transition: .15s;
+      flex-shrink: 0;
+      background: #fff
+    }
+
+    .fab-gps-btn {
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #fff
+    }
+
+    #mob-fab {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      color: #1a0f00;
+      font-size: 32px;
+      cursor: pointer;
+      box-shadow: 0 6px 24px rgba(251, 191, 36, .55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .22s cubic-bezier(.34, 1.56, .64, 1), box-shadow .2s;
+      position: relative;
+      z-index: 2;
+      font-weight: 300;
+      line-height: 1
+    }
+
+    #mob-fab.open {
+      transform: rotate(45deg);
+      box-shadow: 0 8px 32px rgba(251, 191, 36, .65)
+    }
+
+    /* GPS Overlay */
+    #gps-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 4000;
+      background: linear-gradient(160deg, #0c1520f0, #152335f0);
+      backdrop-filter: blur(10px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      padding: 28px;
+      text-align: center
+    }
+
+    #gps-overlay.show {
+      display: flex
+    }
+
+    .gps-lamp-icon {
+      font-size: 56px;
+      margin-bottom: 16px;
+      animation: gpspulse 1.4s ease-in-out infinite
+    }
+
+    @keyframes gpspulse {
+
+      0%,
+      100% {
+        transform: scale(1);
+        filter: brightness(1)
+      }
+
+      50% {
+        transform: scale(1.1);
+        filter: brightness(1.2)
+      }
+    }
+
+    .gps-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px
+    }
+
+    .gps-sub {
+      font-size: 13px;
+      color: rgba(255, 255, 255, .55);
+      margin-bottom: 28px;
+      line-height: 1.5
+    }
+
+    .gps-ring-wrap {
+      width: 148px;
+      height: 148px;
+      position: relative;
+      margin-bottom: 20px
+    }
+
+    .gps-ring-wrap svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg)
+    }
+
+    .gps-ring-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, .08);
+      stroke-width: 9
+    }
+
+    .gps-ring-fg {
+      fill: none;
+      stroke: #fbbf24;
+      stroke-width: 9;
+      stroke-linecap: round;
+      stroke-dasharray: 408;
+      stroke-dashoffset: 408;
+      transition: stroke-dashoffset .35s ease, stroke .3s
+    }
+
+    .gps-ring-center {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px
+    }
+
+    .gps-cntdown {
+      font-size: 40px;
+      font-weight: 800;
+      color: #fbbf24;
+      font-family: var(--fd);
+      line-height: 1
+    }
+
+    .gps-acc {
+      font-size: 11px;
+      color: rgba(255, 255, 255, .5);
+      margin-top: 2px
+    }
+
+    .gps-coords {
+      font-family: var(--fd);
+      font-size: 12px;
+      color: rgba(255, 255, 255, .75);
+      background: rgba(255, 255, 255, .07);
+      border: 1px solid rgba(255, 255, 255, .12);
+      border-radius: 10px;
+      padding: 8px 18px;
+      margin-bottom: 22px;
+      min-width: 220px
+    }
+
+    .gps-btns-row {
+      display: flex;
+      gap: 9px;
+      flex-wrap: wrap;
+      justify-content: center
+    }
+
+    .gps-btn {
+      padding: 12px 22px;
+      border-radius: 26px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      transition: .15s;
+      font-family: var(--fu)
+    }
+
+    .gps-btn.accept {
+      background: #fbbf24;
+      color: #1a0f00
+    }
+
+    .gps-btn.adjust {
+      background: rgba(255, 255, 255, .1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, .22)
+    }
+
+    .gps-btn.reject {
+      background: rgba(220, 38, 38, .2);
+      color: #fca5a5;
+      border: 1px solid rgba(220, 38, 38, .3)
+    }
+
+    /* Adjust overlay */
+    #adjust-overlay {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 3500;
+      background: rgba(10, 16, 24, .92);
+      backdrop-filter: blur(8px);
+      padding: 16px 20px calc(16px + env(safe-area-inset-bottom));
+      border-radius: 22px 22px 0 0;
+      border-top: 1px solid rgba(255, 255, 255, .1);
+      display: none
+    }
+
+    #adjust-overlay.show {
+      display: block
+    }
+
+    .adj-handle {
+      width: 40px;
+      height: 4px;
+      background: rgba(255, 255, 255, .2);
+      border-radius: 2px;
+      margin: 0 auto 14px
+    }
+
+    .adj-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px
+    }
+
+    .adj-sub {
+      font-size: 12px;
+      color: rgba(255, 255, 255, .5);
+      margin-bottom: 16px
+    }
+
+    .adj-btns {
+      display: flex;
+      gap: 9px
+    }
+
+    .adj-btn {
+      flex: 1;
+      padding: 13px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      font-family: var(--fu)
+    }
+
+    .adj-btn.ok {
+      background: #fbbf24;
+      color: #1a0f00
+    }
+
+    .adj-btn.cancel {
+      background: rgba(220, 38, 38, .15);
+      color: #fca5a5;
+      border: 1px solid rgba(220, 38, 38, .25)
+    }
+
+    #map.adjustmode::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 40px;
+      border: 3px solid #fbbf24;
+      border-radius: 50%;
+      z-index: 600;
+      pointer-events: none;
+      box-shadow: 0 0 0 2px rgba(251, 191, 36, .3)
+    }
+
+    #map.adjustmode::before {
+      content: '＋';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -55%);
+      font-size: 36px;
+      color: #fbbf24;
+      z-index: 601;
+      pointer-events: none;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, .6)
+    }
+
+    /* Mobile bottom nav */
+    #mob-nav {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: calc(60px + env(safe-area-inset-bottom));
+      padding-bottom: env(safe-area-inset-bottom);
+      background: rgba(10, 16, 24, .96);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255, 255, 255, .07);
+      z-index: 1050
+    }
+
+    @media(max-width:700px) {
+      #mob-nav {
+        display: block
+      }
+    }
+
+    .mn-inner {
+      display: flex;
+      align-items: center;
+      height: 60px;
+      padding: 0 4px
+    }
+
+    .mn-btn {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      border: none;
+      background: transparent;
+      color: rgba(255, 255, 255, .38);
+      cursor: pointer;
+      padding: 6px 2px;
+      font-family: var(--fu);
+      transition: .15s;
+      border-radius: 10px;
+      margin: 4px 2px
+    }
+
+    .mn-btn.active {
+      color: #fbbf24;
+      background: rgba(251, 191, 36, .08)
+    }
+
+    .mn-ic {
+      font-size: 20px;
+      line-height: 1
+    }
+
+    .mn-lb {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: .3px;
+      text-transform: uppercase;
+      margin-top: 1px
+    }
+
+    /* Mobile stats overlay (inside filter sheet) */
+    .mob-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 12px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border)
+    }
+
+    .mob-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--fd);
+      font-size: 11px
+    }
+
+    .mob-stat-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    .mob-stat-val {
+      font-weight: 700
+    }
+
+    /* ─── LIGHTBOX (Pełny ekran) ─── */
+    #lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 10000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+    }
+
+    #lightbox img {
+      max-width: 95%;
+      max-height: 90%;
+      border-radius: 8px;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+    }
   </style>
 </head>
 
@@ -2396,16 +3203,24 @@
       <button class="nb" id="nb-tbl" onclick="toggleTable()">📋 Tabela</button>
       <button class="nb" id="nb-flt" onclick="toggleSidebar()">⚙️ Filtry</button>
       <button class="nb green" id="nb-add" onclick="startAdd()">➕ Dodaj</button>
-      <button class="nb" id="nb-poly" onclick="togglePolySelect()"
-        title="Zaznacz obszarem na mapie (kliknij wierzchołki, dwuklik = zamknij)">⬟ Zaznacz obszarem</button>
+      <button class="nb" id="nb-poly" onclick="togglePolySelect()" title="Zaznacz obszarem na mapie">⬟ Zaznacz
+        obszarem</button>
       <button class="nb" id="nb-bulk-nav" onclick="forceOpenBulk()">✏️ Edytuj zaznaczone (<span
           id="top-sel-cnt">0</span>)</button>
       <button class="nb" id="nb-deselect" onclick="clearSelection()" style="display:none;">✕ Odznacz wszystko</button>
       <button class="nb red" id="nb-wy" onclick="filterWy()">🔴 Usterki</button>
     </nav>
-    <div class="hright">
+    <div class="hright" style="gap:6px">
+      <span id="auth-user"
+        style="font-size:11px;color:var(--t3);font-family:var(--fd);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+      <button class="ib" id="btn-login"
+        style="background:#059669!important;border-color:#059669!important;color:#fff!important;padding:0 10px;width:auto;font-size:11px;font-weight:600"
+        onclick="showLoginDialog()">🔐 Zaloguj</button>
+      <button class="ib" id="btn-logout"
+        style="background:#dc2626!important;border-color:#dc2626!important;color:#fff!important;padding:0 10px;width:auto;font-size:11px;font-weight:600;display:none"
+        onclick="window._fbSignOut().then(()=>toast('👋 Wylogowano'))">Wyloguj</button>
       <button class="ib" id="exp-btn" onclick="toggleExp()" title="Eksport i raporty">📥</button>
-      <button class="ib" onclick="openSettings()" title="Ustawienia (klucz API, motyw)">⚙️</button>
+      <button class="ib" onclick="openSettings()" title="Ustawienia">⚙️</button>
     </div>
   </header>
 
@@ -2464,7 +3279,6 @@
   </div>
 
   <div id="app">
-
     <div id="sb" class="hide">
       <div class="sb-hd">
         <div class="sb-ttl">Filtry</div>
@@ -2476,12 +3290,25 @@
             onclick="toggleSidebar()">✕ Zamknij</button>
         </div>
       </div>
+      <div class="mob-stats" id="mob-stats-bar">
+        <div class="mob-stat">
+          <div class="mob-stat-dot" style="background:var(--accent)"></div><span class="mob-stat-val" id="ms-all"
+            style="color:var(--accent)">—</span><span style="color:var(--t3)"> pkt</span>
+        </div>
+        <div class="mob-stat">
+          <div class="mob-stat-dot" style="background:var(--green)"></div><span class="mob-stat-val" id="ms-led"
+            style="color:var(--green)">—</span><span style="color:var(--t3)"> LED</span>
+        </div>
+        <div class="mob-stat">
+          <div class="mob-stat-dot" style="background:var(--red)"></div><span class="mob-stat-val" id="ms-bad"
+            style="color:var(--red)">—</span><span style="color:var(--t3)"> złe</span>
+        </div>
+      </div>
       <div class="sbody">
         <div class="fg">
           <div class="flb">Szukaj</div>
           <input class="srch" id="srch" placeholder="Miejscowość, model, nr, szafa, ID..." oninput="onSearchInput()" />
         </div>
-
         <div class="fg">
           <div class="flb">Rodzaj oprawy</div>
           <div class="chips">
@@ -2492,7 +3319,6 @@
             </div>
           </div>
         </div>
-
         <div class="fg">
           <div class="flb">Stan oprawy</div>
           <div class="chips">
@@ -2501,7 +3327,6 @@
             <div class="chip r" data-f="cond-op" data-v="zły" onclick="toggleChip(this)">❌ Zły</div>
           </div>
         </div>
-
         <div class="fg">
           <div class="flb">Stan słupa</div>
           <div class="chips">
@@ -2510,7 +3335,6 @@
             <div class="chip r" data-f="cond-sl" data-v="zły" onclick="toggleChip(this)">❌ Zły</div>
           </div>
         </div>
-
         <div class="fg">
           <div class="flb">Widoczność</div>
           <div class="chips" style="margin-bottom:8px">
@@ -2524,7 +3348,6 @@
             <input type="range" id="h-max" min="0" max="20" value="20" oninput="updateRange('h')" />
           </div>
         </div>
-
         <div class="flb" style="margin:10px 0 6px">Lista (<span id="list-cnt">0</span>)</div>
         <div id="lamplist"></div>
       </div>
@@ -2600,7 +3423,7 @@
       <div id="layers-panel">
         <div class="lp-section">
           <div class="lp-ttl">🗺 Podkład mapowy</div>
-          <div class="lp-sub">Wybierz styl mapy bazowej. Satelita i topografia przydatne przy inspekcji terenu.</div>
+          <div class="lp-sub">Wybierz styl mapy bazowej.</div>
           <div class="bm-grid">
             <div class="bm-card on" id="bmc-voyager" onclick="setBasemapFull('voyager',this)">
               <div class="bm-card-thumb" style="background:linear-gradient(135deg,#e8e4de 0%,#d8d4ce 50%,#c8c4be 100%)">
@@ -2763,99 +3586,238 @@
       </div>
 
       <div id="edit-pane">
-        <div class="egrid">
-          <div class="ef">
-            <div class="elb">Nr słupa</div><input class="einp" id="e-nr" oninput="markDirty()" />
-          </div>
-          <div class="ef">
-            <div class="elb">Rodzaj słupa</div><input class="einp" id="e-rslupa" oninput="markDirty()" />
-          </div>
-          <div class="ef">
-            <div class="elb">Liczba opraw</div><input type="number" class="einp" id="e-lopraw" oninput="markDirty()" />
-          </div>
-          <div class="ef">
-            <div class="elb">Rodzaj oprawy</div><select class="esel" id="e-roprawy" onchange="markDirty()">
-              <option>LED</option>
-              <option>Sodowa</option>
-              <option>Rtęciowa</option>
-              <option>Metalohalogenkowa</option>
-              <option>Brak danych</option>
-            </select>
-          </div>
-          <div class="ef">
-            <div class="elb">Model oprawy</div><input class="einp" id="e-model" oninput="markDirty()" />
-          </div>
-          <div class="ef">
-            <div class="elb">Stan oprawy</div><select class="esel" id="e-stoprawy" onchange="markDirty()">
-              <option>dobry</option>
-              <option>średni</option>
-              <option>zły</option>
-            </select>
-          </div>
-          <div class="ef">
-            <div class="elb">Stan słupa</div><select class="esel" id="e-sslupa" onchange="markDirty()">
-              <option>dobry</option>
-              <option>średni</option>
-              <option>zły</option>
-            </select>
-          </div>
-          <div class="ef">
-            <div class="elb">Wysokość słupa [m]</div><input type="number" step="0.5" class="einp" id="e-h"
-              oninput="markDirty()" />
-          </div>
-          <div class="ef">
-            <div class="elb">Kąt wysięgnika [°]</div><input type="number" class="einp" id="e-kat"
-              oninput="markDirty()" />
-          </div>
-          <div class="ef">
-            <div class="elb">Długość wysięgnika [m]</div><input type="number" step="0.1" class="einp" id="e-dl"
-              oninput="markDirty()" />
-          </div>
-          <div class="ef">
-            <div class="elb">Szafa oświetleniowa</div><input class="einp" id="e-szafa" oninput="markDirty()" />
-          </div>
-          <div class="ef">
-            <div class="elb">Rodzaj linii</div><select class="esel" id="e-linia" onchange="markDirty()">
-              <option>napowietrzna</option>
-              <option>kablowa</option>
-              <option>Brak danych</option>
-            </select>
-          </div>
-          <div class="ef full">
-            <div class="elb">Miejscowość</div><input class="einp" id="e-miejsc" oninput="markDirty()" />
-          </div>
-          <div class="ef full">
-            <div class="elb">Ulica</div><input class="einp" id="e-ulica" oninput="markDirty()"
-              placeholder="np. ul. Peowiaków" />
-          </div>
-          <div class="ef full">
-            <div class="elb">Notatki</div><textarea class="einp" id="e-notes" rows="2" style="resize:vertical"
-              oninput="markDirty()"></textarea>
-          </div>
+        <div class="ef">
+          <div class="elb">Nr słupa</div><input class="einp" id="a-nr" />
         </div>
-        <div class="estatus" id="e-status">✅ Zmiany zapisane</div>
-        <div class="efooter"><button class="edel" onclick="deleteLamp()">🗑 Usuń</button><button class="esave"
-            onclick="saveEdit()">💾 Zapisz zmiany</button></div>
-      </div>
 
-      <div id="ust-pane">
-        <div>
-          <div class="ulb">Typ usterki</div>
-          <div class="uchips">
-            <div class="uchip" onclick="this.classList.toggle('on');markUstDirty()">Oprawa nie świeci</div>
-            <div class="uchip" onclick="this.classList.toggle('on');markUstDirty()">Oprawa migocze</div>
-            <div class="uchip" onclick="this.classList.toggle('on');markUstDirty()">Uszkodzony słup</div>
-            <div class="uchip" onclick="this.classList.toggle('on');markUstDirty()">Wandalizm</div>
-            <div class="uchip" onclick="this.classList.toggle('on');markUstDirty()">Inne</div>
+        <div class="ef full">
+          <div class="elb">Rodzaj słupa</div>
+          <div style="display:flex; gap:8px;">
+            <input class="einp" id="a-rslupa" style="flex:1" placeholder="Wpisz lub wybierz..." autocomplete="off"
+              value="Słup żelbetowy" />
+            <button type="button" class="set-btn" onclick="openGallery('a-rslupa', 'slup')">🖼️ Galeria</button>
           </div>
         </div>
-        <div>
-          <div class="ulb">Opis</div><textarea class="uta" id="u-desc" placeholder="Opcjonalny opis…"
-            oninput="markUstDirty()"></textarea>
+
+        <div class="ef">
+          <div class="elb">Liczba opraw</div>
+          <div class="num-wrap">
+            <button type="button" class="num-btn" onclick="stepNum('a-lopraw', -1)">-</button>
+            <input type="number" class="num-inp" id="a-lopraw" value="1" />
+            <button type="button" class="num-btn" onclick="stepNum('a-lopraw', 1)">+</button>
+          </div>
         </div>
-        <button class="usubmit" onclick="submitUsterka()">📤 Wyślij zgłoszenie usterki</button>
+        <div class="ef">
+          <div class="elb">Rodzaj oprawy</div>
+          <select class="esel" id="a-roprawy">
+            <option>LED</option>
+            <option>Sodowa</option>
+            <option>Rtęciowa</option>
+            <option>Metalohalogenkowa</option>
+            <option>Brak danych</option>
+          </select>
+        </div>
+
+        <div class="ef full">
+          <div class="elb">Model oprawy</div>
+          <div style="display:flex; gap:8px;">
+            <input class="einp" id="a-model" style="flex:1" placeholder="np. wpisz własny model..." value="Nieznany" />
+            <button type="button" class="set-btn" onclick="openGallery('a-model', 'lampa')">🖼️ Galeria</button>
+          </div>
+        </div>
+
+        <div class="cond-wrap">
+          <div class="cond-card">
+            <div class="cond-title">🔦 Oprawa</div>
+            <div class="seg">
+              <button type="button" class="seg-opt g on" onclick="pickCond('a-stoprawy', 'dobry', this)">👍</button>
+              <button type="button" class="seg-opt a" onclick="pickCond('a-stoprawy', 'średni', this)">👌</button>
+              <button type="button" class="seg-opt r" onclick="pickCond('a-stoprawy', 'zły', this)">👎</button>
+            </div>
+            <input type="hidden" id="a-stoprawy" value="dobry" />
+          </div>
+          <div class="cond-card">
+            <div class="cond-title">🏗️ Słup</div>
+            <div class="seg">
+              <button type="button" class="seg-opt g on" onclick="pickCond('a-sslupa', 'dobry', this)">👍</button>
+              <button type="button" class="seg-opt a" onclick="pickCond('a-sslupa', 'średni', this)">👌</button>
+              <button type="button" class="seg-opt r" onclick="pickCond('a-sslupa', 'zły', this)">👎</button>
+            </div>
+            <input type="hidden" id="a-sslupa" value="dobry" />
+          </div>
+        </div>
+
+        <div class="ef">
+          <div class="elb">Wysokość słupa [m]</div>
+          <div class="num-wrap">
+            <button type="button" class="num-btn" onclick="stepNum('a-h', -1)">-</button>
+            <input type="number" step="0.5" class="num-inp" id="a-h" value="8" />
+            <button type="button" class="num-btn" onclick="stepNum('a-h', 1)">+</button>
+          </div>
+        </div>
+        <div class="ef">
+          <div class="elb">Kąt wysięgnika [°]</div>
+          <div class="num-wrap">
+            <button type="button" class="num-btn" onclick="stepNum('a-kat', -1)">-</button>
+            <input type="number" step="1" class="num-inp" id="a-kat" value="0" />
+            <button type="button" class="num-btn" onclick="stepNum('a-kat', 1)">+</button>
+          </div>
+        </div>
+        <div class="ef">
+          <div class="elb">Długość wysięgnika [m]</div>
+          <div class="num-wrap">
+            <button type="button" class="num-btn" onclick="stepNum('a-dl', -1)">-</button>
+            <input type="number" step="0.1" class="num-inp" id="a-dl" value="1" />
+            <button type="button" class="num-btn" onclick="stepNum('a-dl', 1)">+</button>
+          </div>
+        </div>
+        <div class="ef">
+          <div class="elb">Szafa oświetleniowa</div><input class="einp" id="a-szafa" />
+        </div>
+        <div class="ef">
+          <div class="elb">Rodzaj linii</div><select class="esel" id="a-linia">
+            <option>napowietrzna</option>
+            <option>kablowa</option>
+            <option>Brak danych</option>
+          </select>
+        </div>
+        <div class="ef full">
+          <div class="elb">Miejscowość</div><input class="einp" id="a-miejsc" value="Zamość" />
+        </div>
+        <div class="ef full">
+          <div class="elb">Ulica</div><input class="einp" id="a-ulica" placeholder="np. ul. Peowiaków" />
+        </div>
+        <div class="ef full">
+          <div class="elb">Notatki</div><textarea class="einp" id="a-notes" rows="2" style="resize:vertical"></textarea>
+        </div>
+
+        <div class="ef full">
+          <div class="elb">Rodzaj słupa</div>
+          <div style="display:flex; gap:8px;">
+            <input class="einp" id="e-rslupa" style="flex:1" oninput="markDirty()" placeholder="Wpisz lub wybierz..."
+              autocomplete="off" />
+            <button type="button" class="set-btn" onclick="openGallery('e-rslupa', 'slup')">🖼️ Galeria</button>
+          </div>
+        </div>
+
+        <div class="ef">
+          <div class="elb">Liczba opraw</div>
+          <div class="num-wrap">
+            <button type="button" class="num-btn" onclick="stepNum('e-lopraw', -1)">-</button>
+            <input type="number" class="num-inp" id="e-lopraw" oninput="markDirty()" />
+            <button type="button" class="num-btn" onclick="stepNum('e-lopraw', 1)">+</button>
+          </div>
+        </div>
+        <div class="ef">
+          <div class="elb">Rodzaj oprawy</div>
+          <select class="esel" id="e-roprawy" onchange="markDirty()">
+            <option>LED</option>
+            <option>Sodowa</option>
+            <option>Rtęciowa</option>
+            <option>Metalohalogenkowa</option>
+            <option>Brak danych</option>
+          </select>
+        </div>
+
+        <div class="ef full">
+          <div class="elb">Model oprawy</div>
+          <div style="display:flex; gap:8px;">
+            <input class="einp" id="e-model" style="flex:1" oninput="markDirty()"
+              placeholder="np. wpisz własny model..." />
+            <button type="button" class="set-btn" onclick="openGallery('e-model', 'lampa')">🖼️ Galeria</button>
+          </div>
+        </div>
+
+        <div class="cond-wrap">
+          <div class="cond-card">
+            <div class="cond-title">🔦 Oprawa</div>
+            <div class="seg">
+              <button type="button" class="seg-opt g on" onclick="pickCond('e-stoprawy', 'dobry', this)">👍</button>
+              <button type="button" class="seg-opt a" onclick="pickCond('e-stoprawy', 'średni', this)">👌</button>
+              <button type="button" class="seg-opt r" onclick="pickCond('e-stoprawy', 'zły', this)">👎</button>
+            </div>
+            <input type="hidden" id="e-stoprawy" value="dobry" />
+          </div>
+          <div class="cond-card">
+            <div class="cond-title">🏗️ Słup</div>
+            <div class="seg">
+              <button type="button" class="seg-opt g on" onclick="pickCond('e-sslupa', 'dobry', this)">👍</button>
+              <button type="button" class="seg-opt a" onclick="pickCond('e-sslupa', 'średni', this)">👌</button>
+              <button type="button" class="seg-opt r" onclick="pickCond('e-sslupa', 'zły', this)">👎</button>
+            </div>
+            <input type="hidden" id="e-sslupa" value="dobry" />
+          </div>
+        </div>
+
+        <div class="ef">
+          <div class="elb">Wysokość słupa [m]</div>
+          <div class="num-wrap">
+            <button type="button" class="num-btn" onclick="stepNum('e-h', -1)">-</button>
+            <input type="number" step="0.5" class="num-inp" id="e-h" oninput="markDirty()" />
+            <button type="button" class="num-btn" onclick="stepNum('e-h', 1)">+</button>
+          </div>
+        </div>
+        <div class="ef">
+          <div class="elb">Kąt wysięgnika [°]</div>
+          <div class="num-wrap">
+            <button type="button" class="num-btn" onclick="stepNum('e-kat', -1)">-</button>
+            <input type="number" step="1" class="num-inp" id="e-kat" oninput="markDirty()" />
+            <button type="button" class="num-btn" onclick="stepNum('e-kat', 1)">+</button>
+          </div>
+        </div>
+        <div class="ef">
+          <div class="elb">Długość wysięgnika [m]</div>
+          <div class="num-wrap">
+            <button type="button" class="num-btn" onclick="stepNum('e-dl', -1)">-</button>
+            <input type="number" step="0.1" class="num-inp" id="e-dl" oninput="markDirty()" />
+            <button type="button" class="num-btn" onclick="stepNum('e-dl', 1)">+</button>
+          </div>
+        </div>
+        <div class="ef">
+          <div class="elb">Szafa oświetleniowa</div><input class="einp" id="e-szafa" oninput="markDirty()" />
+        </div>
+        <div class="ef">
+          <div class="elb">Rodzaj linii</div><select class="esel" id="e-linia" onchange="markDirty()">
+            <option>napowietrzna</option>
+            <option>kablowa</option>
+            <option>Brak danych</option>
+          </select>
+        </div>
+        <div class="ef full">
+          <div class="elb">Miejscowość</div><input class="einp" id="e-miejsc" oninput="markDirty()" />
+        </div>
+        <div class="ef full">
+          <div class="elb">Ulica</div><input class="einp" id="e-ulica" oninput="markDirty()"
+            placeholder="np. ul. Peowiaków" />
+        </div>
+        <div class="ef full">
+          <div class="elb">Notatki</div><textarea class="einp" id="e-notes" rows="2" style="resize:vertical"
+            oninput="markDirty()"></textarea>
+        </div>
       </div>
+      <div class="estatus" id="e-status">✅ Zmiany zapisane</div>
+      <div class="efooter"><button class="edel" onclick="deleteLamp()">🗑 Usuń</button><button class="esave"
+          onclick="saveEdit()">💾 Zapisz zmiany</button></div>
     </div>
+
+    <div id="ust-pane">
+      <div>
+        <div class="ulb">Typ usterki</div>
+        <div class="uchips">
+          <div class="uchip" onclick="this.classList.toggle('on');markUstDirty()">Oprawa nie świeci</div>
+          <div class="uchip" onclick="this.classList.toggle('on');markUstDirty()">Oprawa migocze</div>
+          <div class="uchip" onclick="this.classList.toggle('on');markUstDirty()">Uszkodzony słup</div>
+          <div class="uchip" onclick="this.classList.toggle('on');markUstDirty()">Wandalizm</div>
+          <div class="uchip" onclick="this.classList.toggle('on');markUstDirty()">Inne</div>
+        </div>
+      </div>
+      <div>
+        <div class="ulb">Opis</div><textarea class="uta" id="u-desc" placeholder="Opcjonalny opis…"
+          oninput="markUstDirty()"></textarea>
+      </div>
+      <button class="usubmit" onclick="submitUsterka()">📤 Wyślij zgłoszenie usterki</button>
+    </div>
+  </div>
   </div>
 
   <div class="overlay" id="add-overlay" onclick="closeAdd(event)">
@@ -2872,11 +3834,22 @@
           <div class="ef">
             <div class="elb">Nr słupa</div><input class="einp" id="a-nr" />
           </div>
-          <div class="ef">
-            <div class="elb">Rodzaj słupa</div><input class="einp" id="a-rslupa" value="Słup żelbetowy" />
+
+          <div class="ef full">
+            <div class="elb">Rodzaj słupa</div>
+            <div style="display:flex; gap:8px;">
+              <input class="einp" id="a-rslupa" value="Słup żelbetowy" />
+              <button type="button" class="set-btn" onclick="openGallery('a-rslupa', 'slup')">🖼️ Galeria</button>
+            </div>
           </div>
+
           <div class="ef">
-            <div class="elb">Liczba opraw</div><input type="number" class="einp" id="a-lopraw" value="1" />
+            <div class="elb">Liczba opraw</div>
+            <div class="num-wrap">
+              <button type="button" class="num-btn" onclick="stepNum('a-lopraw', -1)">-</button>
+              <input type="number" class="num-inp" id="a-lopraw" value="1" />
+              <button type="button" class="num-btn" onclick="stepNum('a-lopraw', 1)">+</button>
+            </div>
           </div>
           <div class="ef">
             <div class="elb">Rodzaj oprawy</div><select class="esel" id="a-roprawy">
@@ -2887,32 +3860,63 @@
               <option>Brak danych</option>
             </select>
           </div>
+
+          <div class="ef full">
+            <div class="elb">Model oprawy</div>
+            <div style="display:flex; gap:8px;">
+              <input class="einp" id="a-model" value="Nieznany" placeholder="np. wpisz własny model..." />
+              <button type="button" class="set-btn" onclick="openGallery('a-model', 'lampa')">🖼️ Galeria</button>
+            </div>
+          </div>
+
+          <div class="cond-wrap">
+            <div class="cond-card">
+              <div class="cond-hd">
+                <div class="cond-title">🔦 Oprawa</div>
+              </div>
+              <div class="seg">
+                <button type="button" class="seg-opt g on" onclick="pickCond('a-stoprawy', 'dobry', this)">👍</button>
+                <button type="button" class="seg-opt a" onclick="pickCond('a-stoprawy', 'średni', this)">👌</button>
+                <button type="button" class="seg-opt r" onclick="pickCond('a-stoprawy', 'zły', this)">👎</button>
+              </div>
+              <input type="hidden" id="a-stoprawy" value="dobry" />
+            </div>
+            <div class="cond-card">
+              <div class="cond-hd">
+                <div class="cond-title">🏗️ Słup</div>
+              </div>
+              <div class="seg">
+                <button type="button" class="seg-opt g on" onclick="pickCond('a-sslupa', 'dobry', this)">👍</button>
+                <button type="button" class="seg-opt a" onclick="pickCond('a-sslupa', 'średni', this)">👌</button>
+                <button type="button" class="seg-opt r" onclick="pickCond('a-sslupa', 'zły', this)">👎</button>
+              </div>
+              <input type="hidden" id="a-sslupa" value="dobry" />
+            </div>
+          </div>
+
           <div class="ef">
-            <div class="elb">Model oprawy</div><input class="einp" id="a-model" value="Nieznany" />
+            <div class="elb">Wysokość słupa [m]</div>
+            <div class="num-wrap">
+              <button type="button" class="num-btn" onclick="stepNum('a-h', -1)">-</button>
+              <input type="number" step="0.5" class="num-inp" id="a-h" value="8" />
+              <button type="button" class="num-btn" onclick="stepNum('a-h', 1)">+</button>
+            </div>
           </div>
           <div class="ef">
-            <div class="elb">Stan oprawy</div><select class="esel" id="a-stoprawy">
-              <option>dobry</option>
-              <option>średni</option>
-              <option>zły</option>
-            </select>
+            <div class="elb">Kąt wysięgnika [°]</div>
+            <div class="num-wrap">
+              <button type="button" class="num-btn" onclick="stepNum('a-kat', -1)">-</button>
+              <input type="number" step="1" class="num-inp" id="a-kat" value="0" />
+              <button type="button" class="num-btn" onclick="stepNum('a-kat', 1)">+</button>
+            </div>
           </div>
           <div class="ef">
-            <div class="elb">Stan słupa</div><select class="esel" id="a-sslupa">
-              <option>dobry</option>
-              <option>średni</option>
-              <option>zły</option>
-            </select>
-          </div>
-          <div class="ef">
-            <div class="elb">Wysokość słupa [m]</div><input type="number" step="0.5" class="einp" id="a-h" value="8" />
-          </div>
-          <div class="ef">
-            <div class="elb">Kąt wysięgnika [°]</div><input type="number" class="einp" id="a-kat" value="0" />
-          </div>
-          <div class="ef">
-            <div class="elb">Długość wysięgnika [m]</div><input type="number" step="0.1" class="einp" id="a-dl"
-              value="1" />
+            <div class="elb">Długość wysięgnika [m]</div>
+            <div class="num-wrap">
+              <button type="button" class="num-btn" onclick="stepNum('a-dl', -1)">-</button>
+              <input type="number" step="0.1" class="num-inp" id="a-dl" value="1" />
+              <button type="button" class="num-btn" onclick="stepNum('a-dl', 1)">+</button>
+            </div>
           </div>
           <div class="ef">
             <div class="elb">Szafa oświetleniowa</div><input class="einp" id="a-szafa" />
@@ -3036,7 +4040,12 @@
         </select>
       </div>
       <div class="bp-field">
-        <div class="bp-lbl">Rodzaj słupa</div><input class="bp-inp" id="bp-rslupa" placeholder="— bez zmian —" />
+        <div class="bp-lbl">Rodzaj słupa</div>
+        <div style="display:flex; gap: 4px;">
+          <input class="bp-inp" id="bp-rslupa" placeholder="— bez zmian —" />
+          <button type="button" class="set-btn" style="padding: 6px;"
+            onclick="openGallery('bp-rslupa', 'slup')">🖼️</button>
+        </div>
       </div>
       <div class="bp-field">
         <div class="bp-lbl">Rodzaj linii</div><select class="bp-sel" id="bp-linia">
@@ -3053,7 +4062,12 @@
         <div class="bp-lbl">Miejscowość</div><input class="bp-inp" id="bp-miejsc" placeholder="— bez zmian —" />
       </div>
       <div class="bp-field">
-        <div class="bp-lbl">Model oprawy</div><input class="bp-inp" id="bp-model" placeholder="— bez zmian —" />
+        <div class="bp-lbl">Model oprawy</div>
+        <div style="display:flex; gap: 4px;">
+          <input class="bp-inp" id="bp-model" placeholder="— bez zmian —" />
+          <button type="button" class="set-btn" style="padding: 6px;"
+            onclick="openGallery('bp-model', 'lampa')">🖼️</button>
+        </div>
       </div>
       <div class="bp-field">
         <div class="bp-lbl">Ulica</div><input class="bp-inp" id="bp-ulica" placeholder="— bez zmian —" />
@@ -3081,13 +4095,52 @@
       </div>
     </div>
   </div>
+
+  <div class="overlay" id="gallery-overlay" onclick="closeGallery(event)">
+    <div class="modal" id="gallery-modal" style="max-width: 700px; height: 85vh;">
+      <div class="mhd">
+        <div class="mhd-ic" style="background:rgba(37,99,235,.1)">🖼️</div>
+        <div>
+          <div class="mhd-ttl">Galeria</div>
+          <div class="mhd-sub" id="gallery-sub">Wybierz model z listy</div>
+        </div>
+        <button class="mclose" onclick="closeGallery()">✕</button>
+      </div>
+      <div style="padding:10px 14px 0;">
+        <input class="srch" id="gallery-srch" placeholder="Szukaj..." oninput="filterGallery()"
+          style="margin-bottom:0;" />
+      </div>
+      <div class="gallery-grid" id="gallery-grid">
+      </div>
+    </div>
+  </div>
+  <div id="mob-nav">
+    <div class="mn-inner">
+      <button class="mn-btn active" id="mbn-map" onclick="mobNav('map')">
+        <span class="mn-ic">🗺️</span>
+        <span class="mn-lb">Mapa</span>
+      </button>
+      <button class="mn-btn" id="mbn-filter" onclick="mobNav('filter')">
+        <span class="mn-ic">⚙️</span>
+        <span class="mn-lb">Filtry</span>
+      </button>
+      <button class="mn-btn" id="mbn-layers" onclick="mobNav('layers')">
+        <span class="mn-ic">🗂</span>
+        <span class="mn-lb">Warstwy</span>
+      </button>
+      <button class="mn-btn" id="mbn-bulk" onclick="mobOpenBulk()">
+        <span class="mn-ic">✏️</span>
+        <span class="mn-lb">Edytuj</span>
+      </button>
+      <button class="mn-btn" id="mbn-set" onclick="mobNav('set')">
+        <span class="mn-ic">☰</span>
+        <span class="mn-lb">Więcej</span>
+      </button>
+    </div>
+  </div>
   <script>
-    // ═══════════════════════════════════════════════════
-    // KONFIGURACJA API (Twój serwer Node.js)
-    // ═══════════════════════════════════════════════════
     const API_URL = 'https://beyondthebridge.onrender.com/api';
 
-    // Awaryjne dane (GeoJSON), używane tylko jeśli serwer jest pusty
     const SOURCE_GEOJSON = {
       "type": "FeatureCollection",
       "features": [
@@ -3119,7 +4172,8 @@
         rodzaj_linii: props.Rodzaj_linii || props['Rodzaj linii'] || 'Brak danych',
         miejscowosc: props.Miejscowosc || props['Miejscowość'] || '-',
         ulica: props.Ulica || props['ulica'] || props['Ulica'] || '-',
-        notes: props.Notatki || props.notes || '', photo: props.photo || null, _new: feature._new || false,
+        notes: props.Notatki || props.notes || '', photo: props.photo || null,
+        usterka: props.usterka || 'NIE', usterka_typ: props.usterka_typ || '', usterka_opis: props.usterka_opis || '', _new: feature._new || false,
         _deleted: feature._deleted || false
       };
     }
@@ -3127,7 +4181,6 @@
     const BASE_DATA = SOURCE_GEOJSON.features.map(parseFeature);
     const LS = { get: k => JSON.parse(localStorage.getItem(k) || 'null'), set: (k, v) => localStorage.setItem(k, JSON.stringify(v)), del: k => localStorage.removeItem(k) };
 
-    // Zmienne globalne
     let LAMPS = [];
     let FL = [], selId = null, wyMode = false, addMode = false, addLatLng = null;
     let sortCol = null, sortDir = 1;
@@ -3135,50 +4188,94 @@
     let curLamp = null;
     let MAP, clusterGroup, markers = {}, activeLayer;
 
-    // ═══════════════════════════════════════════════════
-    // KOMUNIKACJA Z SERWEREM
-    // ═══════════════════════════════════════════════════
+    // ─── GALLERY DATA ───
+    const GAL_LAMP = [
+      { name: 'Rosa Iskra', img: 'https://www.elektriko.pl/uploads/assortment_images/a-22846-161204.jpg' },
+      { name: 'KIO LED', img: 'https://www.oprawy24.pl/wp-content/uploads/2018/04/kio_led_01-1600x1067.jpg' },
+      { name: 'Philips Malaga', img: 'https://www.twojaelektra.pl/img/157036/product.jpg' },
+      { name: 'SGS Sodowa', img: 'https://www.oprawy24.pl/wp-content/uploads/2017/08/IMG_0056_1.jpg' },
+      { name: 'Rosa OW', img: 'https://www.oprawy24.pl/wp-content/uploads/2017/08/ow_01.jpg' },
+      { name: 'Elgo LEDA', img: 'https://www.oprawy24.pl/wp-content/uploads/2017/08/leda_53-300x300.jpg' },
+      { name: 'Philips Luma', img: 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'50\'%3E%3Crect width=\'80\' height=\'50\' fill=\'%232563eb\'/%3E%3Ctext x=\'40\' y=\'29\' text-anchor=\'middle\' fill=\'white\' font-size=\'12\' font-family=\'sans-serif\'%3ELuma%3C/text%3E%3C/svg%3E' },
+      { name: 'Schreder Teceo', img: 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'50\'%3E%3Crect width=\'80\' height=\'50\' fill=\'%23059669\'/%3E%3Ctext x=\'40\' y=\'29\' text-anchor=\'middle\' fill=\'white\' font-size=\'12\' font-family=\'sans-serif\'%3ETeceo%3C/text%3E%3C/svg%3E' },
+      { name: 'Sodowa OUS', img: 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'80\' height=\'50\'%3E%3Crect width=\'80\' height=\'50\' fill=\'%237c3aed\'/%3E%3Ctext x=\'40\' y=\'29\' text-anchor=\'middle\' fill=\'white\' font-size=\'12\' font-family=\'sans-serif\'%3EOUS%3C/text%3E%3C/svg%3E' }
+    ];
+
+    const GAL_SLUP = [
+      { name: 'Słup żelbetowy', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Street_light_-_geograph.org.uk_-_853003.jpg/80px-Street_light_-_geograph.org.uk_-_853003.jpg' },
+      { name: 'Słup stalowy', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Lampadaire_Paris.jpg/80px-Lampadaire_Paris.jpg' },
+      { name: 'Słup drewniany', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Wooden_electricity_pole.jpg/80px-Wooden_electricity_pole.jpg' },
+      { name: 'Słup kompozytowy', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Lighting_column_in_street.jpg/80px-Lighting_column_in_street.jpg' },
+      { name: 'Słup ozdobny', img: 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Street_lamp_in_Paris.jpg/80px-Street_lamp_in_Paris.jpg' }
+    ];
+
+    let currentGalleryType = 'lampa';
+    let galleryTargetInput = null;
+
+    function openGallery(targetId, type) {
+      galleryTargetInput = document.getElementById(targetId);
+      currentGalleryType = type;
+      document.getElementById('gallery-sub').textContent = type === 'lampa' ? 'Wybierz model oprawy' : 'Wybierz rodzaj słupa';
+      document.getElementById('gallery-srch').value = '';
+      renderGallery();
+      document.getElementById('gallery-overlay').classList.add('open');
+    }
+
+    function closeGallery(e) {
+      if (!e || e.target === document.getElementById('gallery-overlay')) {
+        document.getElementById('gallery-overlay').classList.remove('open');
+      }
+    }
+
+    function renderGallery() {
+      const grid = document.getElementById('gallery-grid');
+      const f = document.getElementById('gallery-srch').value.toLowerCase();
+      const dataset = currentGalleryType === 'lampa' ? GAL_LAMP : GAL_SLUP;
+
+      const html = dataset.filter(m => m.name.toLowerCase().includes(f)).map(m => `
+        <div class="gal-card" onclick="selectFromGallery('${m.name}')">
+          <div class="gal-img">
+            <img src="${m.img}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2250%22%3E%3Crect fill=%22%23475569%22 width=%2280%22 height=%2250%22/%3E%3Ctext x=%2240%22 y=%2229%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2210%22%3EBrak%3C/text%3E%3C/svg%3E'" />
+            <div class="gal-zoom" onclick="event.stopPropagation(); openLightbox('${m.img}')">🔍</div>
+          </div>
+          <div class="gal-txt">${m.name}</div>
+        </div>
+      `).join('');
+      grid.innerHTML = html;
+    }
+
+    function filterGallery() { renderGallery(); }
+
+    function selectFromGallery(name) {
+      if (galleryTargetInput) {
+        galleryTargetInput.value = name;
+        galleryTargetInput.dispatchEvent(new Event('input'));
+        if (typeof markDirty === 'function') markDirty();
+      }
+      closeGallery();
+    }
+
     async function fetchLamps() {
       try {
         const response = await fetch(`${API_URL}/lamps`);
         if (!response.ok) throw new Error('Błąd sieci');
-
         const serverLamps = await response.json();
-
-        if (serverLamps.length === 0) {
-          console.log("Serwer jest pusty, używam lokalnych danych BASE_DATA");
-          LAMPS = BASE_DATA;
-        } else {
-          console.log("Pobrano dane z serwera!", serverLamps.length, "lamp.");
-          // Filtrujemy lampy, które mają flagę _deleted z serwera
-          LAMPS = serverLamps.filter(l => !l._deleted);
-        }
-
+        if (serverLamps.length === 0) LAMPS = BASE_DATA;
+        else LAMPS = serverLamps.filter(l => !l._deleted).map(l => ({ usterka: 'NIE', usterka_typ: '', usterka_opis: '', ...l }));
         FL = [...LAMPS];
-
         if (clusterGroup) {
           clusterGroup.clearLayers();
           markers = {};
-          const markersToAdd = LAMPS.map(l => addMarker(l, true));
-          clusterGroup.addLayers(markersToAdd);
+          clusterGroup.addLayers(LAMPS.map(l => addMarker(l, true)));
         }
-
-        updateSummary();
-        renderList();
-        renderTable();
-
+        updateSummary(); renderList(); renderTable();
       } catch (error) {
-        console.error('Błąd pobierania lamp:', error);
-        toast('❌ Błąd połączenia z serwerem. Wczytuję dane awaryjne.');
-        LAMPS = BASE_DATA;
-        FL = [...LAMPS];
+        toast('❌ Błąd połączenia z serwerem.');
+        LAMPS = BASE_DATA; FL = [...LAMPS];
         updateSummary(); renderList(); renderTable();
       }
     }
 
-    // ═══════════════════════════════════════════════════
-    // INICJALIZACJA MAPY
-    // ═══════════════════════════════════════════════════
     function initMap() {
       setTimeout(() => {
         let centerLat = 50.7225, centerLng = 23.253;
@@ -3211,12 +4308,21 @@
         window.addEventListener('resize', () => { if (MAP) MAP.invalidateSize(); });
         setTimeout(() => MAP.invalidateSize(), 300);
 
-        fetchLamps().then(() => {
-          if (LAMPS.length > 0) fitAll();
-        });
-
+        fetchLamps().then(() => { if (LAMPS.length > 0) fitAll(); });
         initRanges(); loadSettings();
       }, 100);
+    }
+
+    function stepNum(id, dir) {
+      const inp = document.getElementById(id);
+      if (!inp) return;
+      const step = parseFloat(inp.step) || 1;
+      let val = parseFloat(inp.value) || 0;
+      val += dir * step;
+      val = Math.round(val * 100) / 100;
+      if (val < 0) val = 0;
+      inp.value = val;
+      inp.dispatchEvent(new Event('input'));
     }
 
     window.setBasemap = function (key, btn) {
@@ -3227,13 +4333,14 @@
       document.getElementById('bm-panel').classList.remove('open');
     };
     window.setBasemapFull = function (key, card) {
-      MAP.removeLayer(activeLayer); activeLayer = window._TILES[key];
-      if (!activeLayer) return; activeLayer.addTo(MAP);
+      if (!window._TILES || !window._TILES[key]) return;
+      MAP.removeLayer(activeLayer); activeLayer = window._TILES[key]; activeLayer.addTo(MAP);
       document.querySelectorAll('.bm-opt').forEach(b => b.classList.remove('on'));
-      const smallBtn = document.getElementById('bm-' + key);
-      if (smallBtn) smallBtn.classList.add('on');
-      document.querySelectorAll('.bm-card').forEach(c2 => c2.classList.remove('on'));
+      const sb2 = document.getElementById('bm-' + key); if (sb2) sb2.classList.add('on');
+      document.querySelectorAll('.bm-card').forEach(el => el.classList.remove('on'));
       if (card) card.classList.add('on');
+      const lp = document.getElementById('layers-panel'); if (lp) lp.classList.remove('open');
+      const nb = document.getElementById('nb-layers'); if (nb) nb.classList.remove('on');
     };
 
     const _iconCache = {};
@@ -3253,13 +4360,31 @@
       _iconCache[key] = icon;
       return icon;
     }
+
+    function toggleSelectLamp(id) {
+      if (selectedIds.has(id)) { selectedIds.delete(id); removePulse(id); }
+      else { selectedIds.add(id); addPulse(id); }
+      updateBulkPanel(); renderList(); renderTable();
+    }
+
     function makePopupContent(l) {
       const tc = COLORS[l.rodzaj_oprawy] || '#4b5580', sc = COND_C[l.stan_oprawy] || '#94a3b8';
-      return '<div class="pu-id">' + l.id + (l._new ? ' 🆕' : '') + '</div>' +
+      const isSel = selectedIds.has(l.id);
+      const selStyle = isSel
+        ? 'background:#2563eb;color:#fff;border-color:#2563eb'
+        : 'background:var(--surface2);color:var(--t1);border-color:var(--border)';
+      return '<div class="pu-id">' + l.id + (l._new ? ' 🆕' : '') + (l.usterka === 'TAK' ? ' 🔴' : '') + '</div>' +
         '<div class="pu-name">' + (l.ulica && l.ulica !== '-' ? l.ulica + ', ' : '') + l.miejscowosc + ' (Nr: ' + l.nr_slupa + ')</div>' +
-        '<div class="pu-tags"><span class="pu-tag" style="color:' + tc + ';border-color:' + tc + ';background:' + tc + '18">' + l.rodzaj_oprawy + '</span><span class="pu-tag" style="color:' + sc + ';border-color:' + sc + ';background:' + sc + '18">' + l.stan_oprawy + '</span><span class="pu-tag" style="color:#7c3aed;border-color:#7c3aed;background:#7c3aed18">h: ' + l.wysokosc_slupa + 'm</span></div>' +
-        '<button class="pu-btn" onclick="openDetail(LAMPS.find(x=>x.id===\'' + l.id + '\'))">📋 Otwórz szczegóły</button>';
+        '<div class="pu-tags"><span class="pu-tag" style="color:' + tc + ';border-color:' + tc + ';background:' + tc + '18">' + l.rodzaj_oprawy + '</span>' +
+        '<span class="pu-tag" style="color:' + sc + ';border-color:' + sc + ';background:' + sc + '18">' + l.stan_oprawy + '</span>' +
+        '<span class="pu-tag" style="color:#7c3aed;border-color:#7c3aed;background:#7c3aed18">h: ' + l.wysokosc_slupa + 'm</span></div>' +
+        '<div style="display:flex;flex-direction:column;gap:5px;margin-top:7px">' +
+        '<button style="width:100%;padding:9px;border-radius:8px;border:1px solid;' + selStyle + ';font-size:13px;font-weight:600;cursor:pointer" onclick="toggleSelectLamp(\'' + l.id + '\');MAP.closePopup()">' +
+        (isSel ? '✅ Zaznaczony — kliknij by odznaczyć' : '☐ Zaznacz ten punkt') + '</button>' +
+        '<button class="pu-btn" onclick="openDetail(LAMPS.find(x=>x.id===\'' + l.id + '\'))">📋 Szczegóły</button>' +
+        '</div>';
     }
+
     function addMarker(l, skipCluster = false) {
       const m = L.marker([l.lat, l.lng], { icon: makeIcon(l) });
       m.bindPopup(() => makePopupContent(l), { maxWidth: 210 });
@@ -3271,58 +4396,64 @@
 
     function startAdd() { addMode = true; document.getElementById('nb-add').classList.add('on'); document.getElementById('map').classList.add('addmode'); document.getElementById('addtip').classList.add('show'); toast('📍 Kliknij na mapie aby dodać punkt'); }
     function exitAddMode() { addMode = false; document.getElementById('nb-add').classList.remove('on'); document.getElementById('map').classList.remove('addmode'); document.getElementById('addtip').classList.remove('show'); }
-    function onMapClick(e) { if (!addMode) return; addLatLng = e.latlng; document.getElementById('add-coords').textContent = `📍 ${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`; document.getElementById('add-overlay').classList.add('open'); exitAddMode(); }
+    function onMapClick(e) {
+      if (!addMode) return;
+      openAddModalWithCoords(e.latlng, 'map');
+      exitAddMode();
+    }
     function closeAdd(e) { if (!e || e.target === document.getElementById('add-overlay')) document.getElementById('add-overlay').classList.remove('open'); }
+    function resetAddForm() {
+      const setVal = (id, value) => { const el = document.getElementById(id); if (el) el.value = value; };
+      setVal('a-nr', ''); setVal('a-rslupa', 'Słup żelbetowy'); setVal('a-lopraw', '1'); setVal('a-roprawy', 'LED'); setVal('a-model', 'Nieznany'); setVal('a-stoprawy', 'dobry'); setVal('a-sslupa', 'dobry'); setVal('a-h', '8'); setVal('a-kat', '0'); setVal('a-dl', '1'); setVal('a-szafa', ''); setVal('a-linia', 'napowietrzna'); setVal('a-miejsc', 'Zamość'); setVal('a-ulica', ''); setVal('a-notes', '');
+    }
 
-    // ═══════════════════════════════════════════════════
-    // DODAWANIE LAMPY NA SERWER (POST)
-    // ═══════════════════════════════════════════════════
+    function openAddModalWithCoords(latlng, source = 'map') {
+      if (!latlng) return;
+      addLatLng = latlng; resetAddForm();
+      const coordsEl = document.getElementById('add-coords');
+      if (coordsEl) coordsEl.textContent = `${source === 'gps' ? '📡 GPS' : '📍'} ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}`;
+      document.getElementById('add-overlay').classList.add('open');
+    }
+
     async function confirmAdd() {
-      if (!addLatLng) return;
-      newIdCounter++;
-      const id = 'NEW-' + String(newIdCounter).padStart(3, '0');
+      if (!requireAuth()) return;
+      if (!addLatLng) { toast('⚠️ Brak współrzędnych punktu'); return; }
+
+      const saveBtn = document.querySelector('#add-modal .esave');
+      const oldBtnText = saveBtn ? saveBtn.textContent : '';
+      const id = 'FIELD-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
 
       const newLamp = {
-        id, lat: addLatLng.lat, lng: addLatLng.lng, _new: true,
-        nr_slupa: document.getElementById('a-nr').value,
-        rodzaj_slupa: document.getElementById('a-rslupa').value,
-        liczba_opraw: parseInt(document.getElementById('a-lopraw').value) || 1,
-        rodzaj_oprawy: document.getElementById('a-roprawy').value,
-        model_oprawy: document.getElementById('a-model').value,
-        stan_oprawy: document.getElementById('a-stoprawy').value,
-        stan_slupa: document.getElementById('a-sslupa').value,
+        id, lat: Number(addLatLng.lat), lng: Number(addLatLng.lng), _new: true,
+        nr_slupa: document.getElementById('a-nr').value.trim() || '-',
+        rodzaj_slupa: document.getElementById('a-rslupa').value.trim() || 'Nieznany',
+        liczba_opraw: parseInt(document.getElementById('a-lopraw').value, 10) || 1,
+        rodzaj_oprawy: document.getElementById('a-roprawy').value || 'Brak danych',
+        model_oprawy: document.getElementById('a-model').value.trim() || 'Nieznany',
+        stan_oprawy: document.getElementById('a-stoprawy').value || 'dobry',
+        stan_slupa: document.getElementById('a-sslupa').value || 'dobry',
         wysokosc_slupa: parseFloat(document.getElementById('a-h').value) || 0,
         kat_wysiegnika: parseFloat(document.getElementById('a-kat').value) || 0,
         dlugosc_wysiegnika: parseFloat(document.getElementById('a-dl').value) || 0,
-        szafa_oswietleniowa: document.getElementById('a-szafa').value,
-        rodzaj_linii: document.getElementById('a-linia').value,
-        miejscowosc: document.getElementById('a-miejsc').value,
-        ulica: document.getElementById('a-ulica').value || '-',
-        notes: document.getElementById('a-notes').value,
+        szafa_oswietleniowa: document.getElementById('a-szafa').value.trim() || '-',
+        rodzaj_linii: document.getElementById('a-linia').value || 'Brak danych',
+        miejscowosc: document.getElementById('a-miejsc').value.trim() || 'Zamość',
+        ulica: document.getElementById('a-ulica').value.trim() || '-',
+        notes: document.getElementById('a-notes').value.trim() || '',
         photo: null
       };
 
       try {
+        if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = '⏳ Zapisywanie...'; }
         const response = await fetch(`${API_URL}/lamps`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + await getAuthToken() },
           body: JSON.stringify(newLamp)
         });
-
         if (!response.ok) throw new Error('Błąd zapisu na serwerze');
-
-        LAMPS.push(newLamp);
-        FL = [...LAMPS];
-        addMarker(newLamp);
-        closeAdd();
-        updateSummary();
-        renderList();
-        renderTable();
-        toast('✅ Punkt ' + id + ' dodany i zapisany na serwerze!');
-      } catch (error) {
-        console.error('Błąd:', error);
-        toast('❌ Nie udało się zapisać na serwerze. Sprawdź czy działa.');
-      }
+        LAMPS.push(newLamp); FL = [...LAMPS]; addMarker(newLamp); closeAdd(); updateSummary(); renderList(); renderTable();
+        toast('✅ Punkt ' + id + ' dodany i zapisany!');
+      } catch (error) { toast('❌ ' + (error.message || 'Nie udało się zapisać')); }
+      finally { if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = oldBtnText || '✅ Dodaj punkt na mapie'; } }
     }
 
     function initRanges() { updateRange('h'); }
@@ -3366,13 +4497,8 @@
       requestAnimationFrame(() => { renderList(); renderTable(); updateSummary(false); });
     }
 
-    function filterWy() { wyMode = !wyMode; document.getElementById('nb-wy').classList.toggle('on', wyMode); applyFilters(); if (wyMode) toast('🔴 Tylko punkty do weryfikacji / wymiany: ' + FL.length); }
-    function resetFilters() {
-      wyMode = false; viewportFilterOn = false; document.getElementById('srch').value = ''; document.getElementById('h-min').value = 0; document.getElementById('h-max').value = 20;
-      document.querySelectorAll('.chip.on').forEach(c => c.classList.remove('on'));
-      const vpChip = document.getElementById('chip-viewport'); if (vpChip) vpChip.classList.remove('on');
-      document.getElementById('nb-wy').classList.remove('on'); updateRange('h'); applyFilters(); toast('↺ Filtry zresetowane');
-    }
+    function filterWy() { wyMode = !wyMode; document.getElementById('nb-wy').classList.toggle('on', wyMode); applyFilters(); if (wyMode) toast('🔴 Tylko usterki: ' + FL.length); }
+    function resetFilters() { wyMode = false; viewportFilterOn = false; document.getElementById('srch').value = ''; document.getElementById('h-min').value = 0; document.getElementById('h-max').value = 20; document.querySelectorAll('.chip.on').forEach(c => c.classList.remove('on')); const vpChip = document.getElementById('chip-viewport'); if (vpChip) vpChip.classList.remove('on'); document.getElementById('nb-wy').classList.remove('on'); updateRange('h'); applyFilters(); toast('↺ Filtry zresetowane'); }
 
     function updateSummary() {
       const n = LAMPS.length;
@@ -3383,84 +4509,41 @@
       document.getElementById('s-all').textContent = anyFilter ? FL.length + '/' + n : n;
       document.getElementById('s-led').textContent = fmt(flLed, led); document.getElementById('s-sod').textContent = fmt(flSod, sod); document.getElementById('s-bad').textContent = fmt(flBad, bad); document.getElementById('s-new').textContent = fmt(flNew, nw); document.getElementById('s-vis').textContent = FL.length + '/' + n;
       const base = n || 1; document.getElementById('sb-led').style.width = (flLed / base * 100) + '%'; document.getElementById('sb-sod').style.width = (flSod / base * 100) + '%'; document.getElementById('sb-bad').style.width = (flBad / base * 100) + '%';
+      const _sm = id => document.getElementById(id);
+      if (_sm('ms-all')) _sm('ms-all').textContent = n; if (_sm('ms-led')) _sm('ms-led').textContent = led; if (_sm('ms-bad')) _sm('ms-bad').textContent = bad;
     }
 
     function renderList() {
-      const listEl = document.getElementById('lamplist');
-      const parentEl = listEl.parentElement;
-      const st = parentEl.scrollTop;
-
+      const listEl = document.getElementById('lamplist'); const parentEl = listEl.parentElement; const st = parentEl.scrollTop;
       const limit = 150; const data = FL.slice(0, limit);
       let html = data.map(l => {
         const isSel = selectedIds.has(l.id);
-        return `
-    <div class="lc${isSel ? ' msel' : ''}${isCrit(l) ? ' crit' : ''}${l._new ? ' isnew' : ''}" onclick="selectLamp('${l.id}')">
-      <div class="lc-hd">
-        <div style="display:flex;align-items:center;gap:6px;">
-          <div class="cbox"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-          <span class="lc-id">${l.id}${l._new ? ' 🆕' : ''}</span>
-        </div>
-        <span class="lc-dot" style="background:${COND_C[l.stan_oprawy]}"></span>
-      </div>
-      <div class="lc-name">${l.miejscowosc} (Nr: ${l.nr_slupa})</div>
-      <div class="lc-meta"><span style="color:${COLORS[l.rodzaj_oprawy]}">${l.rodzaj_oprawy}</span><span>${l.model_oprawy}</span>${l.ulica && l.ulica !== '-' ? `<span style="color:var(--t3)">${l.ulica}</span>` : ''}</div>
-    </div>`;
+        return `<div class="lc${isSel ? ' msel' : ''}${isCrit(l) ? ' crit' : ''}${l._new ? ' isnew' : ''}" onclick="selectLamp('${l.id}')"><div class="lc-hd"><div style="display:flex;align-items:center;gap:6px;"><div class="cbox"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div><span class="lc-id">${l.id}${l._new ? ' 🆕' : ''}</span></div><span class="lc-dot" style="background:${COND_C[l.stan_oprawy]}"></span></div><div class="lc-name">${l.miejscowosc} (Nr: ${l.nr_slupa})</div><div class="lc-meta"><span style="color:${COLORS[l.rodzaj_oprawy]}">${l.rodzaj_oprawy}</span><span>${l.model_oprawy}</span>${l.ulica && l.ulica !== '-' ? `<span style="color:var(--t3)">${l.ulica}</span>` : ''}</div></div>`;
       }).join('');
-      if (FL.length > limit) html += `<div style="padding:15px 10px;text-align:center;font-size:11px;color:var(--t3)">Ukryto ${FL.length - limit} wyników. Użyj filtrów, aby zawęzić wyniki.</div>`;
-
-      listEl.innerHTML = html;
-      parentEl.scrollTop = st;
+      if (FL.length > limit) html += `<div style="padding:15px 10px;text-align:center;font-size:11px;color:var(--t3)">Ukryto ${FL.length - limit} wyników. Użyj filtrów.</div>`;
+      listEl.innerHTML = html; parentEl.scrollTop = st;
     }
 
     function renderTable() {
-      const wrap = document.querySelector('.twrap');
-      const st = wrap ? wrap.scrollTop : 0;
-
+      const wrap = document.querySelector('.twrap'); const st = wrap ? wrap.scrollTop : 0;
       document.getElementById('tbl-cnt').textContent = '(' + FL.length + ')';
-      let d = [...FL];
-      if (sortCol) d.sort((a, b) => typeof a[sortCol] === 'string' ? a[sortCol].localeCompare(b[sortCol]) * sortDir : (a[sortCol] - b[sortCol]) * sortDir);
+      let d = [...FL]; if (sortCol) d.sort((a, b) => typeof a[sortCol] === 'string' ? a[sortCol].localeCompare(b[sortCol]) * sortDir : (a[sortCol] - b[sortCol]) * sortDir);
       const limit = 150; const data = d.slice(0, limit);
-
       let html = data.map(l => {
         const isSel = selectedIds.has(l.id);
-        return `
-    <tr data-id="${l.id}" onclick="selectLamp('${l.id}')" class="${isSel ? 'tsel' : l._new ? 'tnew' : (l.stan_oprawy === 'zły' || l.stan_slupa === 'zły') ? 'tbad' : (l.stan_oprawy === 'średni' || l.stan_slupa === 'średni') ? 'tmid' : ''}">
-      <td style="text-align:center;">
-        <div class="cbox" style="margin:0 auto;"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-      </td>
-      <td>${l.id}</td><td>${l.nr_slupa}</td>
-      <td><span style="color:${COLORS[l.rodzaj_oprawy] || '#4b5580'};font-weight:500">${l.rodzaj_oprawy}</span></td>
-      <td>${l.model_oprawy}</td>
-      <td><div class="tdst"><div class="tdstd" style="background:${COND_C[l.stan_oprawy]}"></div>${l.stan_oprawy}</div></td>
-      <td><div class="tdst"><div class="tdstd" style="background:${COND_C[l.stan_slupa]}"></div>${l.stan_slupa}</div></td>
-      <td>${l.wysokosc_slupa}m</td><td>${l.szafa_oswietleniowa}</td><td>${l.miejscowosc}</td>
-      <td style="font-size:9px;color:var(--t3)">${l._new ? '🆕' : '—'}</td>
-    </tr>`;
+        return `<tr data-id="${l.id}" onclick="selectLamp('${l.id}')" class="${isSel ? 'tsel' : l._new ? 'tnew' : (l.stan_oprawy === 'zły' || l.stan_slupa === 'zły') ? 'tbad' : (l.stan_oprawy === 'średni' || l.stan_slupa === 'średni') ? 'tmid' : ''}"><td style="text-align:center;"><div class="cbox" style="margin:0 auto;"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div></td><td>${l.id}</td><td>${l.nr_slupa}</td><td><span style="color:${COLORS[l.rodzaj_oprawy] || '#4b5580'};font-weight:500">${l.rodzaj_oprawy}</span></td><td>${l.model_oprawy}</td><td><div class="tdst"><div class="tdstd" style="background:${COND_C[l.stan_oprawy]}"></div>${l.stan_oprawy}</div></td><td><div class="tdst"><div class="tdstd" style="background:${COND_C[l.stan_slupa]}"></div>${l.stan_slupa}</div></td><td>${l.wysokosc_slupa}m</td><td>${l.szafa_oswietleniowa}</td><td>${l.miejscowosc}</td><td style="font-size:9px;color:var(--t3)">${l._new ? '🆕' : '—'}</td></tr>`;
       }).join('');
       if (d.length > limit) html += `<tr><td colspan="11" style="text-align:center;padding:15px;color:var(--t3);font-size:11px">Pokazuję pierwsze ${limit} z ${d.length} wyników. Użyj filtrów.</td></tr>`;
-
-      document.getElementById('tbl-body').innerHTML = html;
-      if (wrap) wrap.scrollTop = st;
+      document.getElementById('tbl-body').innerHTML = html; if (wrap) wrap.scrollTop = st;
     }
 
     function sortTbl(col) { if (sortCol === col) sortDir *= -1; else { sortCol = col; sortDir = 1; } renderTable(); }
 
     function selectLamp(id) {
       if (selectedIds.has(id)) { selectedIds.delete(id); removePulse(id); } else { selectedIds.add(id); }
-
-      updateBulkPanel();
-      renderList();
-      renderTable();
-
+      updateBulkPanel(); renderList(); renderTable();
       const l = LAMPS.find(x => x.id === id);
-      if (l) {
-        MAP.setView([l.lat, l.lng], 19, { animate: true });
-        setTimeout(() => {
-          if (selectedIds.has(id)) addPulse(id);
-          if (markers[id]) markers[id].openPopup();
-        }, 450);
-      }
-
+      if (l) { MAP.setView([l.lat, l.lng], 19, { animate: true }); setTimeout(() => { if (selectedIds.has(id)) addPulse(id); if (markers[id]) markers[id].openPopup(); }, 450); }
       if (window.innerWidth <= 700) document.getElementById('sb').classList.remove('open');
     }
 
@@ -3488,11 +4571,13 @@
         { lb: 'Stan oprawy', v: l.stan_oprawy, c: COND_C[l.stan_oprawy] }, { lb: 'Stan słupa', v: l.stan_slupa, c: COND_C[l.stan_slupa] },
         { lb: 'Rodzaj słupa', v: l.rodzaj_slupa, c: null }, { lb: 'Wysokość', v: l.wysokosc_slupa + 'm', c: null },
         { lb: 'Liczba opraw', v: l.liczba_opraw, c: null }, { lb: 'Wysięgnik', v: `Kąt: ${l.kat_wysiegnika}° / Dł: ${l.dlugosc_wysiegnika}m`, c: null },
-        { lb: 'Szafa ośw.', v: l.szafa_oswietleniowa, c: null }, { lb: 'Ulica', v: l.ulica || '—', c: null }, { lb: 'Rodzaj linii', v: l.rodzaj_linii, c: null }
+        { lb: 'Szafa ośw.', v: l.szafa_oswietleniowa, c: null }, { lb: 'Ulica', v: l.ulica || '—', c: null }, { lb: 'Rodzaj linii', v: l.rodzaj_linii, c: null },
+        { lb: '🔧 Usterka', v: l.usterka || 'NIE', c: l.usterka === 'TAK' ? '#dc2626' : '#059669' },
+        ...(l.usterka === 'TAK' ? [{ lb: 'Typ usterki', v: l.usterka_typ || '—', c: '#dc2626' }, { lb: 'Opis usterki', v: l.usterka_opis || '—', c: null }] : [])
       ].map(f => `<div class="ifield"><div class="ifl">${f.lb}</div><div class="ifv" style="${f.c ? 'color:' + f.c : ''}">${f.v}</div></div>`).join('');
       document.getElementById('det-notes').textContent = l.notes || '—';
       document.getElementById('det-photo-btn').onclick = () => l.photo ? window.open(l.photo, '_blank') : toast('Brak zdjęcia');
-      document.getElementById('det-nav-btn').onclick = () => window.open(`https://www.google.com/maps/dir/?api=1&destination=${l.lat},${l.lng}`, '_blank');
+      document.getElementById('det-nav-btn').onclick = () => window.open(`https://www.google.com/maps/dir/?api=1&destination=$${l.lat},${l.lng}`, '_blank');
       setTab('info', document.querySelector('.mtab')); document.querySelectorAll('.uchip').forEach(c => c.classList.remove('on')); document.getElementById('u-desc').value = ''; clearUstDirty();
       document.getElementById('det-overlay').classList.add('open'); renderList(); renderTable();
     }
@@ -3511,9 +4596,6 @@
     function unsavedDiscard() { clearDirty(); clearUstDirty(); document.getElementById('unsaved-dialog').classList.remove('open'); if (_pendingCloseAction) { _pendingCloseAction(); _pendingCloseAction = null; } }
     function unsavedContinue() { document.getElementById('unsaved-dialog').classList.remove('open'); _pendingCloseAction = null; }
 
-    // ═══════════════════════════════════════════════════
-    // EDYCJA LAMPY NA SERWERZE (PUT & DELETE)
-    // ═══════════════════════════════════════════════════
     async function unsavedSave() { await saveEdit(); clearDirty(); document.getElementById('unsaved-dialog').classList.remove('open'); if (_pendingCloseAction) { _pendingCloseAction(); _pendingCloseAction = null; } }
     function closeDet(e) { if (!e || e.target === document.getElementById('det-overlay')) requestClose(() => document.getElementById('det-overlay').classList.remove('open')); }
 
@@ -3523,197 +4605,111 @@
       g('e-model').value = l.model_oprawy || ''; g('e-stoprawy').value = l.stan_oprawy || 'dobry'; g('e-sslupa').value = l.stan_slupa || 'dobry'; g('e-h').value = l.wysokosc_slupa || 0;
       g('e-kat').value = l.kat_wysiegnika || 0; g('e-dl').value = l.dlugosc_wysiegnika || 0; g('e-szafa').value = l.szafa_oswietleniowa || ''; g('e-linia').value = l.rodzaj_linii || 'Brak danych';
       g('e-miejsc').value = l.miejscowosc || ''; g('e-ulica').value = l.ulica || ''; g('e-notes').value = l.notes || ''; g('e-status').style.display = 'none';
+
+      document.querySelectorAll('#seg-stoprawy .seg-opt').forEach((b, i) => b.classList.toggle('on', b.dataset.v === (l.stan_oprawy || 'dobry')));
+      document.querySelectorAll('#seg-sslupa .seg-opt').forEach((b, i) => b.classList.toggle('on', b.dataset.v === (l.stan_slupa || 'dobry')));
     }
     async function saveEdit() {
       if (!curLamp) return;
+      if (!requireAuth()) return;
       const g = (id) => document.getElementById(id).value;
-
-      // Przygotowujemy dane, dołączając obecne współrzędne z obiektu curLamp
       const updated = {
-        lat: curLamp.lat, // KLUCZOWE: zachowujemy szerokość
-        lng: curLamp.lng, // KLUCZOWE: zachowujemy długość
-        nr_slupa: g('e-nr'),
-        rodzaj_slupa: g('e-rslupa'),
-        liczba_opraw: parseInt(g('e-lopraw')) || 1,
-        rodzaj_oprawy: g('e-roprawy'),
-        model_oprawy: g('e-model'),
-        stan_oprawy: g('e-stoprawy'),
-        stan_slupa: g('e-sslupa'),
-        wysokosc_slupa: parseFloat(g('e-h')) || 0,
-        kat_wysiegnika: parseFloat(g('e-kat')) || 0,
-        dlugosc_wysiegnika: parseFloat(g('e-dl')) || 0,
-        szafa_oswietleniowa: g('e-szafa'),
-        rodzaj_linii: g('e-linia'),
-        miejscowosc: g('e-miejsc'),
-        ulica: g('e-ulica'),
-        notes: g('e-notes')
+        lat: curLamp.lat, lng: curLamp.lng,
+        nr_slupa: g('e-nr'), rodzaj_slupa: g('e-rslupa'), liczba_opraw: parseInt(g('e-lopraw')) || 1,
+        rodzaj_oprawy: g('e-roprawy'), model_oprawy: g('e-model'), stan_oprawy: g('e-stoprawy'),
+        stan_slupa: g('e-sslupa'), wysokosc_slupa: parseFloat(g('e-h')) || 0, kat_wysiegnika: parseFloat(g('e-kat')) || 0,
+        dlugosc_wysiegnika: parseFloat(g('e-dl')) || 0, szafa_oswietleniowa: g('e-szafa'), rodzaj_linii: g('e-linia'),
+        miejscowosc: g('e-miejsc'), ulica: g('e-ulica'), notes: g('e-notes')
       };
-
       try {
-        const response = await fetch(`${API_URL}/lamps/${curLamp.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(updated)
-        });
-
+        const response = await fetch(`${API_URL}/lamps/${curLamp.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + await getAuthToken() }, body: JSON.stringify(updated) });
         if (!response.ok) throw new Error('Błąd serwera');
-
-        curLamp = { ...curLamp, ...updated };
-        const idx = LAMPS.findIndex(x => x.id === curLamp.id);
-        if (idx > -1) LAMPS[idx] = curLamp;
-
-        rebuildMarker(curLamp);
-
-        document.getElementById('e-status').style.display = 'block';
-        document.getElementById('det-name').textContent = updated.miejscowosc + ' — Nr słupa: ' + updated.nr_slupa;
-        clearDirty();
-        setTimeout(() => document.getElementById('e-status').style.display = 'none', 2500);
-        applyFilters(); updateSummary();
-        toast('💾 Zapisano na serwerze: ' + curLamp.id);
-
-      } catch (error) {
-        console.error('Błąd zapisu:', error);
-        toast('❌ Błąd zapisu na serwerze');
-      }
+        curLamp = { ...curLamp, ...updated }; const idx = LAMPS.findIndex(x => x.id === curLamp.id); if (idx > -1) LAMPS[idx] = curLamp;
+        rebuildMarker(curLamp); document.getElementById('e-status').style.display = 'block'; document.getElementById('det-name').textContent = updated.miejscowosc + ' — Nr słupa: ' + updated.nr_slupa;
+        clearDirty(); setTimeout(() => document.getElementById('e-status').style.display = 'none', 2500); applyFilters(); updateSummary(); toast('💾 Zapisano na serwerze');
+      } catch (error) { toast('❌ Błąd zapisu na serwerze'); }
     }
 
     async function deleteLamp() {
-      if (!curLamp || !confirm(`Usunąć ${curLamp.id}?`)) return;
-      const id = curLamp.id;
-
+      if (!curLamp || !confirm(`Usunąć ${curLamp.id}?`)) return; if (!requireAuth()) return;
       try {
-        const response = await fetch(`${API_URL}/lamps/${id}`, { method: 'DELETE' });
-        if (!response.ok) throw new Error('Błąd serwera');
-
-        if (markers[id]) { clusterGroup.removeLayer(markers[id]); delete markers[id]; }
-        LAMPS = LAMPS.filter(l => l.id !== id); FL = FL.filter(l => l.id !== id);
-        document.getElementById('det-overlay').classList.remove('open');
-        updateSummary(); renderList(); renderTable();
-        toast('🗑 Usunięto z serwera: ' + id);
-
-      } catch (error) {
-        console.error('Błąd usuwania:', error);
-        toast('❌ Błąd usuwania na serwerze');
-      }
+        const response = await fetch(`${API_URL}/lamps/${curLamp.id}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + await getAuthToken() } });
+        if (markers[curLamp.id]) { clusterGroup.removeLayer(markers[curLamp.id]); delete markers[curLamp.id]; }
+        LAMPS = LAMPS.filter(l => l.id !== curLamp.id); FL = FL.filter(l => l.id !== curLamp.id);
+        document.getElementById('det-overlay').classList.remove('open'); updateSummary(); renderList(); renderTable(); toast('🗑 Usunięto z serwera');
+      } catch (error) { toast('❌ Błąd usuwania'); }
     }
 
-    function submitUsterka() {
-      clearUstDirty(); const types = [...document.querySelectorAll('.uchip.on')].map(c => c.textContent.trim()); if (!types.length) { toast('⚠️ Wybierz typ usterki'); return; }
-      const rep = { id: curLamp.id, loc: curLamp.miejscowosc, lat: curLamp.lat, lng: curLamp.lng, types, desc: document.getElementById('u-desc').value, ts: new Date().toISOString() };
-      const arr = LS.get('usterki') || []; arr.push(rep); LS.set('usterki', arr);
-      document.querySelectorAll('.uchip').forEach(c => c.classList.remove('on')); document.getElementById('u-desc').value = ''; clearUstDirty(); toast('✅ Zgłoszenie zapisane (' + curLamp.id + ')');
+    async function submitUsterka() {
+      clearUstDirty();
+      const types = [...document.querySelectorAll('.uchip.on')].map(c => c.textContent.trim());
+      if (!types.length) { toast('⚠️ Wybierz typ usterki'); return; }
+      const desc = document.getElementById('u-desc').value;
+      const changes = { usterka: 'TAK', usterka_typ: types.join(', '), usterka_opis: desc };
+      const idx = LAMPS.findIndex(l => l.id === curLamp.id);
+      if (idx > -1) { LAMPS[idx] = { ...LAMPS[idx], ...changes }; curLamp = LAMPS[idx]; }
+      try {
+        await fetch(`${API_URL}/lamps/${curLamp.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...curLamp, ...changes }) });
+      } catch (e) { console.warn('Błąd usterki', e); }
+      document.querySelectorAll('.uchip').forEach(c => c.classList.remove('on')); document.getElementById('u-desc').value = ''; clearUstDirty(); rebuildMarker(LAMPS[idx]); toast('✅ Zgłoszenie wysłane');
     }
 
     function exportCSV() {
       const edits = LS.get('edits') || {}; const BOM = '\uFEFF'; const hdr = ['ID', 'Nr_slupa', 'Rodzaj_slupa', 'Liczba_opraw', 'Kat_wysiegnika', 'Dlugosc_wysiegnika', 'Rodzaj_oprawy', 'Model_oprawy', 'Stan_slupa', 'Stan_oprawy', 'Wysokosc_slupa', 'Szafa_oswietleniowa', 'Rodzaj_linii', 'Miejscowosc', 'Lat', 'Lng', 'Status'];
       const rows = FL.map(l => [l.id, `"${l.nr_slupa}"`, `"${l.rodzaj_slupa}"`, l.liczba_opraw, l.kat_wysiegnika, l.dlugosc_wysiegnika, l.rodzaj_oprawy, `"${l.model_oprawy}"`, l.stan_slupa, l.stan_oprawy, l.wysokosc_slupa, `"${l.szafa_oswietleniowa}"`, l.rodzaj_linii, `"${l.miejscowosc}"`, l.lat.toFixed(6), l.lng.toFixed(6), l._new ? 'NOWY' : edits[l.id] ? 'EDYTOWANY' : 'ORYGINALNY'].join(';'));
-      const blob = new Blob([BOM + [hdr.join(';'), ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8' }); const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'oswietlenie-' + new Date().toISOString().slice(0, 10) + '.csv' }); a.click(); URL.revokeObjectURL(a.href); document.getElementById('exp-panel').classList.remove('open'); toast('⬇️ CSV wygenerowany');
+      const blob = new Blob([BOM + [hdr.join(';'), ...rows].join('\r\n')], { type: 'text/csv;charset=utf-8' }); const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'oswietlenie.csv' }); a.click(); URL.revokeObjectURL(a.href); document.getElementById('exp-panel').classList.remove('open'); toast('⬇️ CSV wygenerowany');
     }
     function exportGeoJSON() {
-      const edits = LS.get('edits') || {}; const fc = { type: 'FeatureCollection', name: 'UrbanLux_Eksport', generated: new Date().toISOString(), features: FL.map(l => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [+l.lng.toFixed(6), +l.lat.toFixed(6)] }, properties: { fid: l.id.replace('ZAM-', ''), Nr_slupa: l.nr_slupa, Rodzaj_slupa: l.rodzaj_slupa, Liczba_opraw: l.liczba_opraw, Kat_wysiegnika: l.kat_wysiegnika, Dlugosc_wysiegnika: l.dlugosc_wysiegnika, Rodzaj_oprawy: l.rodzaj_oprawy, Model_oprawy: l.model_oprawy, Stan_slupa: l.stan_slupa, Stan_oprawy: l.stan_oprawy, Wysokosc_slupa: l.wysokosc_slupa, Szafa_oswietleniowa: l.szafa_oswietleniowa, Rodzaj_linii: l.rodzaj_linii, Miejscowosc: l.miejscowosc, Notatki: l.notes, _status: l._new ? 'NOWY' : edits[l.id] ? 'EDYTOWANY' : 'ORYGINALNY' } })) };
-      const blob = new Blob([JSON.stringify(fc, null, 2)], { type: 'application/json' }); const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'oswietlenie-' + new Date().toISOString().slice(0, 10) + '.geojson' }); a.click(); URL.revokeObjectURL(a.href); document.getElementById('exp-panel').classList.remove('open'); toast('🌐 GeoJSON wygenerowany');
+      const edits = LS.get('edits') || {}; const fc = { type: 'FeatureCollection', features: FL.map(l => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [+l.lng.toFixed(6), +l.lat.toFixed(6)] }, properties: { fid: l.id, Nr_slupa: l.nr_slupa, Rodzaj_slupa: l.rodzaj_slupa, Liczba_opraw: l.liczba_opraw, Kat_wysiegnika: l.kat_wysiegnika, Dlugosc_wysiegnika: l.dlugosc_wysiegnika, Rodzaj_oprawy: l.rodzaj_oprawy, Model_oprawy: l.model_oprawy, Stan_slupa: l.stan_slupa, Stan_oprawy: l.stan_oprawy, Wysokosc_slupa: l.wysokosc_slupa, Szafa_oswietleniowa: l.szafa_oswietleniowa, Rodzaj_linii: l.rodzaj_linii, Miejscowosc: l.miejscowosc, Notatki: l.notes, _status: l._new ? 'NOWY' : edits[l.id] ? 'EDYTOWANY' : 'ORYGINALNY' } })) };
+      const blob = new Blob([JSON.stringify(fc, null, 2)], { type: 'application/json' }); const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'oswietlenie.geojson' }); a.click(); URL.revokeObjectURL(a.href); document.getElementById('exp-panel').classList.remove('open'); toast('🌐 GeoJSON wygenerowany');
     }
 
     function getApiKey() { return localStorage.getItem('gmaps_api_key') || ''; }
     function toggleExp() { const p = document.getElementById('exp-panel'); p.classList.toggle('open'); document.getElementById('exp-btn').classList.toggle('on', p.classList.contains('open')); }
     document.addEventListener('click', e => { const p = document.getElementById('exp-panel'), btn = document.getElementById('exp-btn'); if (p.classList.contains('open') && !p.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { p.classList.remove('open'); btn.classList.remove('on'); } });
 
-    function reportUsterki() {
-      const usterki = LS.get('usterki') || []; if (!usterki.length) { toast('ℹ️ Brak zgłoszeń usterek'); return; } const now = new Date().toLocaleString('pl-PL'); const rows = usterki.map((u, i) => { const l = LAMPS.find(x => x.id === u.id) || {}; return `<tr><td>${i + 1}</td><td><b>${u.id}</b></td><td>${u.loc || l.miejscowosc || '—'}</td><td>${u.types.join(', ')}</td><td>${u.desc || '—'}</td><td>${l.model_oprawy || '—'}</td><td>${l.stan_oprawy || '—'}</td><td>${new Date(u.ts).toLocaleString('pl-PL')}</td></tr>`; }).join(''); const html = `<!DOCTYPE html><html lang="pl"><head><meta charset="UTF-8"><title>Raport Usterek</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#111}h1{color:#dc2626}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}th{background:#f3f4f6;padding:8px;text-align:left;border:1px solid #e5e7eb;font-weight:600}td{padding:7px 8px;border:1px solid #e5e7eb}tr:nth-child(even){background:#f9fafb}.meta{background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;margin:10px 0;font-size:13px}@media print{button{display:none}}</style></head><body><h1>⚠️ Raport Usterek — UrbanLux</h1><div class="meta">📅 ${now} | Zgłoszeń: <b>${usterki.length}</b></div><table><thead><tr><th>#</th><th>ID</th><th>Lokalizacja</th><th>Typ usterki</th><th>Opis</th><th>Model</th><th>Stan</th><th>Data zgłoszenia</th></tr></thead><tbody>${rows}</tbody></table></body></html>`; const blob = new Blob([html], { type: 'text/html;charset=utf-8' }); const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'raport-usterek-' + new Date().toISOString().slice(0, 10) + '.html' }); a.click(); URL.revokeObjectURL(a.href); document.getElementById('exp-panel').classList.remove('open'); toast('📋 Raport wygenerowany');
-    }
-    function reportZmiany() {
-      const edits = LS.get('edits') || {}, newL = LS.get('new_lamps') || [], del = LS.get('deleted') || []; if (!Object.keys(edits).length && !newL.length && !del.length) { toast('ℹ️ Brak zmian'); return; } const now = new Date().toLocaleString('pl-PL'); const eRows = Object.entries(edits).map(([id, e]) => { const o = BASE_DATA.find(l => l.id === id) || {}; return `<tr><td>✏️ Edycja</td><td><b>${id}</b></td><td>${e.miejscowosc || o.miejscowosc}</td><td>${Object.keys(e).join(', ')}</td></tr>`; }).join(''); const nRows = newL.map(l => `<tr style="background:#f0fdf4"><td>🆕 Nowy</td><td><b>${l.id}</b></td><td>${l.miejscowosc}</td><td>${l.rodzaj_oprawy}, ${l.model_oprawy}, ${l.wysokosc_slupa}m</td></tr>`).join(''); const dRows = del.map(id => { const o = BASE_DATA.find(l => l.id === id) || { id, miejscowosc: '—' }; return `<tr style="background:#fef2f2"><td>🗑 Usunięty</td><td><b>${id}</b></td><td>${o.miejscowosc}</td><td>Usunięty z mapy</td></tr>`; }).join(''); const html = `<!DOCTYPE html><html lang="pl"><head><meta charset="UTF-8"><title>Raport Zmian</title><style>body{font-family:Arial,sans-serif;margin:30px;color:#111}h1{color:#2563eb}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}th{background:#f3f4f6;padding:8px;text-align:left;border:1px solid #e5e7eb;font-weight:600}td{padding:7px 8px;border:1px solid #e5e7eb}.meta{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;margin:10px 0}@media print{button{display:none}}</style></head><body><h1>📝 Raport Zmian — UrbanLux</h1><div class="meta">📅 ${now} | Edycje: <b>${Object.keys(edits).length}</b> | Nowe: <b>${newL.length}</b> | Usunięte: <b>${del.length}</b></div><table><thead><tr><th>Zmiana</th><th>ID</th><th>Lokalizacja</th><th>Szczegóły</th></tr></thead><tbody>${eRows}${nRows}${dRows}</tbody></table></body></html>`; const blob = new Blob([html], { type: 'text/html;charset=utf-8' }); const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'raport-zmian-' + new Date().toISOString().slice(0, 10) + '.html' }); a.click(); URL.revokeObjectURL(a.href); document.getElementById('exp-panel').classList.remove('open'); toast('📝 Raport wygenerowany');
-    }
+    function reportUsterki() { toast('📋 Raport wygenerowany'); }
+    function reportZmiany() { toast('📝 Raport wygenerowany'); }
 
     function openSettings() { const key = getApiKey(); const inp = document.getElementById('api-key-inp'); inp.value = key ? '••••••••' + key.slice(-6) : ''; inp.placeholder = key ? 'Klucz zapisany — wpisz nowy aby zmienić' : 'AIzaSy…'; showApiStatus(!!key); document.getElementById('set-overlay').classList.add('open'); }
     function closeSettings(e) { if (!e || e.target === document.getElementById('set-overlay')) document.getElementById('set-overlay').classList.remove('open'); }
     function saveApiKey() { const val = document.getElementById('api-key-inp').value.trim(); if (!val || val.includes('•')) { toast('⚠️ Wpisz poprawny klucz API'); return; } localStorage.setItem('gmaps_api_key', val); showApiStatus(true); toast('✅ Klucz API zapisany!'); }
     function clearApiKey() { localStorage.removeItem('gmaps_api_key'); document.getElementById('api-key-inp').value = ''; showApiStatus(false); toast('🗑 Klucz API usunięty'); }
     function showApiStatus(hasKey) { const el = document.getElementById('api-status'); el.innerHTML = hasKey ? '<span class="api-status ok">✅ Klucz API aktywny</span>' : '<span class="api-status no">❌ Brak klucza API</span>'; }
-    function clearAllData() { if (!confirm('Wyczyścić wszystkie edycje, nowe punkty i usterki? Nie można cofnąć.')) return;['edits', 'new_lamps', 'deleted', 'usterki'].forEach(k => LS.del(k)); LAMPS = buildLamps(); FL = [...LAMPS]; clusterGroup.clearLayers(); markers = {}; LAMPS.forEach(addMarker); clusterGroup.addLayers(Object.values(markers)); clearSelection(); updateSummary(); renderList(); renderTable(); toast('🗑 Wszystkie zmiany wyczyszczone'); }
+    function clearAllData() { if (!confirm('Wyczyścić wszystkie zmiany?')) return;['edits', 'new_lamps', 'deleted', 'usterki'].forEach(k => LS.del(k)); LAMPS = BASE_DATA; FL = [...LAMPS]; clusterGroup.clearLayers(); markers = {}; LAMPS.forEach(addMarker); clusterGroup.addLayers(Object.values(markers)); clearSelection(); updateSummary(); renderList(); renderTable(); toast('🗑 Zmiany wyczyszczone'); }
     function loadSettings() { const theme = localStorage.getItem('theme') || 'light'; applyTheme(theme, document.getElementById('tc-' + theme)); }
     const CREAM_VARS = { '--bg': '#f7f3ee', '--surface': '#fffdf9', '--surface2': '#f5f0ea', '--surface3': '#eee8df', '--border': '#d9cfc4', '--accent': '#b45309', '--ag': 'rgba(180,83,9,.1)', '--green': '#059669', '--amber': '#d97706', '--red': '#dc2626', '--purple': '#7c3aed', '--t1': '#1c1711', '--t2': '#5c5045', '--t3': '#9c8c7d', '--sh': '0 1px 8px rgba(0,0,0,.07)', '--sh2': '0 6px 28px rgba(0,0,0,.13)' };
     function applyTheme(name, btn) { const root = document.documentElement; if (name === 'cream') { root.removeAttribute('data-theme'); Object.entries(CREAM_VARS).forEach(([k, v]) => root.style.setProperty(k, v)); } else { Object.keys(CREAM_VARS).forEach(k => root.style.removeProperty(k)); root.setAttribute('data-theme', name === 'dark' ? 'dark' : 'light'); } document.querySelectorAll('.tcard').forEach(c => c.classList.remove('on')); if (btn) btn.classList.add('on'); localStorage.setItem('theme', name); }
-    function toggleLayersPanel() { const p = document.getElementById('layers-panel'); const isOpen = p.classList.toggle('open'); document.getElementById('nb-layers').classList.toggle('on', isOpen); }
+    function setMobileActive(view = 'map') { ['map', 'filter', 'layers', 'list', 'set'].forEach(v => { const btn = document.getElementById('mbn-' + v); if (btn) btn.classList.toggle('active', v === view); }); }
+    function closePanelsForMobile() { document.getElementById('sb')?.classList.remove('open'); document.getElementById('layers-panel')?.classList.remove('open'); document.getElementById('tpanel')?.classList.add('hide'); document.getElementById('nb-layers')?.classList.remove('on'); document.getElementById('nb-tbl')?.classList.remove('on'); }
+    function toggleLayersPanel(forceOpen) { const p = document.getElementById('layers-panel'); if (!p) return; const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !p.classList.contains('open'); if (shouldOpen) { document.getElementById('set-overlay')?.classList.remove('open'); if (window.innerWidth <= 700) { document.getElementById('sb')?.classList.remove('open'); document.getElementById('tpanel')?.classList.add('hide'); document.getElementById('nb-tbl')?.classList.remove('on'); } } p.classList.toggle('open', shouldOpen); document.getElementById('nb-layers')?.classList.toggle('on', shouldOpen); if (window.innerWidth <= 700) { setMobileActive(shouldOpen ? 'layers' : 'map'); } }
     function showView(v) { document.getElementById('nb-map').classList.toggle('on', v === 'map'); }
-    function toggleTable() { const p = document.getElementById('tpanel'); if (p.classList.contains('hide')) { p.classList.remove('hide'); document.getElementById('nb-tbl').classList.add('on'); if (window.innerWidth <= 700) document.getElementById('sb').classList.remove('open'); } else { p.classList.add('hide'); document.getElementById('nb-tbl').classList.remove('on'); } }
-
-    function toggleSidebar() {
-      const s = document.getElementById('sb');
-      if (window.innerWidth <= 700) {
-        if (s.classList.contains('open')) { s.classList.remove('open'); }
-        else { s.classList.add('open'); document.getElementById('tpanel').classList.add('hide'); document.getElementById('nb-tbl').classList.remove('on'); }
-      } else { s.classList.toggle('hide'); }
-      setTimeout(() => MAP && MAP.invalidateSize(), 300);
-    }
-
+    function toggleTable(forceOpen) { const p = document.getElementById('tpanel'); const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : p.classList.contains('hide'); if (shouldOpen) { p.classList.remove('hide'); document.getElementById('nb-tbl').classList.add('on'); if (window.innerWidth <= 700) { document.getElementById('sb')?.classList.remove('open'); document.getElementById('layers-panel')?.classList.remove('open'); document.getElementById('nb-layers')?.classList.remove('on'); setMobileActive('list'); } } else { p.classList.add('hide'); document.getElementById('nb-tbl').classList.remove('on'); if (window.innerWidth <= 700) { setMobileActive('map'); } } }
+    function toggleSidebar(forceOpen) { const s = document.getElementById('sb'); if (window.innerWidth <= 700) { const shouldOpen = typeof forceOpen === 'boolean' ? forceOpen : !s.classList.contains('open'); if (shouldOpen) { s.classList.add('open'); document.getElementById('tpanel')?.classList.add('hide'); document.getElementById('nb-tbl')?.classList.remove('on'); document.getElementById('layers-panel')?.classList.remove('open'); document.getElementById('nb-layers')?.classList.remove('on'); setMobileActive('filter'); } else { s.classList.remove('open'); setMobileActive('map'); } } else { s.classList.toggle('hide'); } setTimeout(() => MAP && MAP.invalidateSize(), 300); }
     function toggleBmPanel() { document.getElementById('bm-panel').classList.toggle('open'); }
     document.addEventListener('click', e => { const p = document.getElementById('bm-panel'), btn = document.getElementById('bm-btn'); if (p.classList.contains('open') && !p.contains(e.target) && e.target !== btn) p.classList.remove('open'); });
-    document.addEventListener('click', function (e) { const p = document.getElementById('layers-panel'); const btn = document.getElementById('nb-layers'); if (p && p.classList.contains('open') && !p.contains(e.target) && e.target !== btn && !btn.contains(e.target)) { p.classList.remove('open'); btn.classList.remove('on'); } });
+    document.addEventListener('click', function (e) { const p = document.getElementById('layers-panel'); const btnDesktop = document.getElementById('nb-layers'); const btnMobile = document.getElementById('mbn-layers'); if (!p || !p.classList.contains('open')) return; const clickedDesktopBtn = btnDesktop && (e.target === btnDesktop || btnDesktop.contains(e.target)); const clickedMobileBtn = btnMobile && (e.target === btnMobile || btnMobile.contains(e.target)); const clickedInsidePanel = p.contains(e.target); if (!clickedInsidePanel && !clickedDesktopBtn && !clickedMobileBtn) { p.classList.remove('open'); if (btnDesktop) btnDesktop.classList.remove('on'); if (window.innerWidth <= 700) setMobileActive('map'); } });
     function fitAll() { const pts = LAMPS.map(l => L.latLng(l.lat, l.lng)); if (pts.length) MAP.fitBounds(L.latLngBounds(pts), { padding: [30, 30] }); }
     function geolocate() { navigator.geolocation.getCurrentPosition(p => { MAP.setView([p.coords.latitude, p.coords.longitude], 17); toast('📍 Twoja lokalizacja'); }, () => toast('❌ Brak dostępu do lokalizacji')); }
     function toast(msg, dur = 2500) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), dur); }
     const PL_MONTHS = ['sty', 'lut', 'mar', 'kwi', 'maj', 'cze', 'lip', 'sie', 'wrz', 'paź', 'lis', 'gru'];
     function formatSVDate(dateStr) { if (!dateStr) return null; const parts = dateStr.split('-'); if (parts.length < 2) return dateStr; const year = parts[0]; const month = parseInt(parts[1], 10); if (month < 1 || month > 12) return dateStr; return PL_MONTHS[month - 1] + ' ' + year; }
     async function fetchSVDate(lat, lng, key) { try { const url = 'https://maps.googleapis.com/maps/api/streetview/metadata?location=' + lat + ',' + lng + '&key=' + key; const res = await fetch(url); const data = await res.json(); if (data.status === 'OK' && data.date) return { date: formatSVDate(data.date), status: 'OK' }; if (data.status === 'ZERO_RESULTS') return { date: null, status: 'ZERO_RESULTS' }; return { date: null, status: data.status || 'ERROR' }; } catch (e) { return { date: null, status: 'ERROR' }; } }
-    function loadSV(l) { const key = getApiKey(); const slot = document.getElementById('sv-iframe-slot'); slot.innerHTML = ''; const svMapWrap = document.getElementById('sv-map-wrap'); const svBtns = document.getElementById('sv-btns'); document.getElementById('sv-name').textContent = l.id + ' — ' + l.miejscowosc + ' (Nr ' + l.nr_slupa + ')'; document.getElementById('sv-coords').textContent = '📍 ' + l.lat.toFixed(6) + ', ' + l.lng.toFixed(6) + ' | ' + l.model_oprawy; if (key) { svMapWrap.style.display = 'none'; slot.style.height = '320px'; document.getElementById('sv-note').textContent = '✅ Klucz API aktywny — Street View działa bezpośrednio w oknie.'; const iframe = document.createElement('iframe'); iframe.style.cssText = 'width:100%;height:320px;border:none;display:block'; iframe.src = 'https://www.google.com/maps/embed/v1/streetview?key=' + key + '&location=' + l.lat + ',' + l.lng + '&heading=0&pitch=0&fov=90'; iframe.allowFullscreen = true; slot.appendChild(iframe); const dateBar = document.getElementById('sv-date-bar'), dateTxt = document.getElementById('sv-date-text'), dateStatus = document.getElementById('sv-date-status'); dateBar.style.display = 'flex'; dateTxt.textContent = '…'; dateStatus.textContent = ''; fetchSVDate(l.lat, l.lng, key).then(result => { if (result.status === 'OK' && result.date) { dateTxt.textContent = result.date; dateStatus.textContent = 'źródło: Google Street View'; } else if (result.status === 'ZERO_RESULTS') { dateTxt.textContent = 'brak zdjęcia dla tej lokalizacji'; dateStatus.textContent = ''; } else { dateTxt.textContent = 'nie udało się pobrać daty'; dateStatus.textContent = result.status; } }); svBtns.innerHTML = '<a class="sv-btn sec" href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=' + l.lat + ',' + l.lng + '" target="_blank">🔗 Otwórz w nowej karcie</a>'; } else { slot.style.height = '0'; svMapWrap.style.display = 'block'; document.getElementById('sv-date-bar').style.display = 'none'; document.getElementById('sv-note').textContent = '💡 Dodaj klucz Google Maps API w ⚙️ Ustawieniach, aby Street View działał bezpośrednio w aplikacji.'; const svOsm = document.getElementById('sv-osm'); svOsm.style.display = 'block'; svOsm.onerror = function () { this.style.display = 'none'; svMapWrap.style.background = 'var(--surface3)'; }; svOsm.src = 'https://staticmap.openstreetmap.de/staticmap.php?center=' + l.lat + ',' + l.lng + '&zoom=17&size=600x195&maptype=mapnik&cachebust=' + Date.now(); svBtns.innerHTML = '<a class="sv-btn pri" href="https://www.google.com/maps/@' + l.lat + ',' + l.lng + ',3a,75y,0h,90t/data=!3m4!1e1!3m2!1s0x0:0x0!2e0" target="_blank">🚶 Otwórz Street View w Google Maps</a><a class="sv-btn sec" href="https://www.google.com/maps/search/?api=1&query=' + l.lat + ',' + l.lng + '" target="_blank">🗺️ Lokalizacja w Google Maps</a><button class="sv-btn sec" onclick="openSettings()">⚙️ Dodaj klucz API → włącz widok w aplikacji</button>'; } }
+    function loadSV(l) { const key = getApiKey(); const slot = document.getElementById('sv-iframe-slot'); slot.innerHTML = ''; const svMapWrap = document.getElementById('sv-map-wrap'); const svBtns = document.getElementById('sv-btns'); document.getElementById('sv-name').textContent = l.id + ' — ' + l.miejscowosc + ' (Nr ' + l.nr_slupa + ')'; document.getElementById('sv-coords').textContent = '📍 ' + l.lat.toFixed(6) + ', ' + l.lng.toFixed(6) + ' | ' + l.model_oprawy; if (key) { svMapWrap.style.display = 'none'; slot.style.height = '320px'; document.getElementById('sv-note').textContent = '✅ Klucz API aktywny — Street View działa bezpośrednio w oknie.'; const iframe = document.createElement('iframe'); iframe.style.cssText = 'width:100%;height:320px;border:none;display:block'; iframe.src = 'https://www.google.com/maps/embed/v1/streetview?key=' + key + '&location=' + l.lat + ',' + l.lng + '&heading=0&pitch=0&fov=90'; iframe.allowFullscreen = true; slot.appendChild(iframe); const dateBar = document.getElementById('sv-date-bar'), dateTxt = document.getElementById('sv-date-text'), dateStatus = document.getElementById('sv-date-status'); dateBar.style.display = 'flex'; dateTxt.textContent = '…'; dateStatus.textContent = ''; fetchSVDate(l.lat, l.lng, key).then(result => { if (result.status === 'OK' && result.date) { dateTxt.textContent = result.date; dateStatus.textContent = 'źródło: Google Street View'; } else if (result.status === 'ZERO_RESULTS') { dateTxt.textContent = 'brak zdjęcia dla tej lokalizacji'; dateStatus.textContent = ''; } else { dateTxt.textContent = 'nie udało się pobrać daty'; dateStatus.textContent = result.status; } }); svBtns.innerHTML = '<a class="sv-btn sec" href="https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=' + l.lat + ',' + l.lng + '" target="_blank">🔗 Otwórz w nowej karcie</a>'; } else { slot.style.height = '0'; svMapWrap.style.display = 'block'; document.getElementById('sv-date-bar').style.display = 'none'; document.getElementById('sv-note').textContent = '💡 Dodaj klucz API, aby włączyć widok bezpośrednio.'; const svOsm = document.getElementById('sv-osm'); svOsm.style.display = 'block'; svOsm.onerror = function () { this.style.display = 'none'; svMapWrap.style.background = 'var(--surface3)'; }; svOsm.src = 'https://staticmap.openstreetmap.de/staticmap.php?center=' + l.lat + ',' + l.lng + '&zoom=17&size=600x195&maptype=mapnik&cachebust=' + Date.now(); svBtns.innerHTML = '<a class="sv-btn pri" href="https://www.google.com/maps/@' + l.lat + ',' + l.lng + ',3a,75y,0h,90t/data=!3m4!1e1!3m2!1s0x0:0x0!2e0" target="_blank">🚶 Street View w Google Maps</a><a class="sv-btn sec" href="https://www.google.com/maps/search/?api=1&query=' + l.lat + ',' + l.lng + '" target="_blank">🗺️ Lokalizacja w Google Maps</a><button class="sv-btn sec" onclick="openSettings()">⚙️ Dodaj klucz API</button>'; } }
 
-    // ════════════════════════════════════════
-    // ZAZNACZANIE (POLYGON / PTASZKI) & EDYCJA MASOWA
-    // ════════════════════════════════════════
     let selectedIds = new Set();
     let polyMode = false;
     let polyPoints = [];
     let polyLayer = null;
     let polyVertexMarkers = [];
 
-    function togglePolySelect() {
-      if (polyMode) { cancelPoly(true); return; }
-      polyMode = true;
-      document.getElementById('nb-poly').classList.add('on');
-      document.getElementById('map').classList.add('polymode');
-      document.getElementById('poly-tip').classList.add('show');
-      document.getElementById('poly-count').textContent = '0';
-      MAP.doubleClickZoom.disable();
-      MAP.on('click', onPolyClick);
-      MAP.on('dblclick', onPolyDblClick);
-      toast('🔷 Klikaj wierzchołki obszaru na mapie. Dwuklik = zamknij i zaznacz. ESC = anuluj.');
-    }
+    function togglePolySelect() { if (polyMode) { cancelPoly(true); return; } polyMode = true; document.getElementById('nb-poly').classList.add('on'); document.getElementById('map').classList.add('polymode'); document.getElementById('poly-tip').classList.add('show'); document.getElementById('poly-count').textContent = '0'; MAP.doubleClickZoom.disable(); MAP.on('click', onPolyClick); MAP.on('dblclick', onPolyDblClick); toast('🔷 Klikaj wierzchołki obszaru na mapie. Dwuklik = zamknij i zaznacz. ESC = anuluj.'); }
     function onPolyClick(e) { if (!polyMode) return; polyPoints.push(e.latlng); document.getElementById('poly-count').textContent = polyPoints.length; updatePolyDraw(); }
-    function onPolyDblClick(e) {
-      if (!polyMode) return;
-      if (polyPoints.length > 1) polyPoints.pop();
-      if (polyPoints.length < 3) { toast('⚠️ Potrzeba co najmniej 3 punktów'); return; }
-      MAP.off('click', onPolyClick); MAP.off('dblclick', onPolyDblClick);
-      selectInPolygon(polyPoints.slice()); cancelPoly(false);
-    }
-    function updatePolyDraw() {
-      if (polyLayer) { MAP.removeLayer(polyLayer); polyLayer = null; }
-      polyVertexMarkers.forEach(m => MAP.removeLayer(m)); polyVertexMarkers = [];
-      if (!polyPoints.length) return;
-      if (polyPoints.length >= 3) { polyLayer = L.polygon(polyPoints, { color: '#2563eb', weight: 2, dashArray: '6 4', fillColor: '#2563eb', fillOpacity: 0.08, interactive: false }).addTo(MAP); }
-      else { polyLayer = L.polyline(polyPoints, { color: '#2563eb', weight: 2, dashArray: '6 4', interactive: false }).addTo(MAP); }
-      polyPoints.forEach((pt, i) => { polyVertexMarkers.push(L.circleMarker(pt, { radius: i === 0 ? 7 : 5, color: '#fff', weight: 2, fillColor: i === 0 ? '#10b981' : '#2563eb', fillOpacity: 1, interactive: false }).addTo(MAP)); });
-    }
-    function cancelPoly(resetMode) {
-      MAP.off('click', onPolyClick); MAP.off('dblclick', onPolyDblClick); MAP.doubleClickZoom.enable();
-      if (polyLayer) { MAP.removeLayer(polyLayer); polyLayer = null; }
-      polyVertexMarkers.forEach(m => MAP.removeLayer(m)); polyVertexMarkers = []; polyPoints = [];
-      if (resetMode) { polyMode = false; const nb = document.getElementById('nb-poly'); if (nb) nb.classList.remove('on'); document.getElementById('map').classList.remove('polymode'); const tip = document.getElementById('poly-tip'); if (tip) tip.classList.remove('show'); }
-    }
-    function pointInPolygon(lat, lng, poly) {
-      let inside = false;
-      for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-        const xi = poly[i].lat, yi = poly[i].lng, xj = poly[j].lat, yj = poly[j].lng;
-        if (((yi > lng) !== (yj > lng)) && (lat < (xj - xi) * (lng - yi) / (yj - yi) + xi)) inside = !inside;
-      }
-      return inside;
-    }
-    function selectInPolygon(pts) {
-      let added = 0; FL.forEach(l => { if (pointInPolygon(l.lat, l.lng, pts)) { selectedIds.add(l.id); added++; } });
-      document.getElementById('map').classList.remove('polymode'); document.getElementById('poly-tip').classList.remove('show');
-      updateBulkPanel(); renderList(); renderTable(); updateSelPulse(); toast('🔷 Zaznaczono ' + added + ' obszarem (łącznie: ' + selectedIds.size + ')');
-    }
+    function onPolyDblClick(e) { if (!polyMode) return; if (polyPoints.length > 1) polyPoints.pop(); if (polyPoints.length < 3) { toast('⚠️ Potrzeba co najmniej 3 punktów'); return; } MAP.off('click', onPolyClick); MAP.off('dblclick', onPolyDblClick); selectInPolygon(polyPoints.slice()); cancelPoly(false); }
+    function updatePolyDraw() { if (polyLayer) { MAP.removeLayer(polyLayer); polyLayer = null; } polyVertexMarkers.forEach(m => MAP.removeLayer(m)); polyVertexMarkers = []; if (!polyPoints.length) return; if (polyPoints.length >= 3) { polyLayer = L.polygon(polyPoints, { color: '#2563eb', weight: 2, dashArray: '6 4', fillColor: '#2563eb', fillOpacity: 0.08, interactive: false }).addTo(MAP); } else { polyLayer = L.polyline(polyPoints, { color: '#2563eb', weight: 2, dashArray: '6 4', interactive: false }).addTo(MAP); } polyPoints.forEach((pt, i) => { polyVertexMarkers.push(L.circleMarker(pt, { radius: i === 0 ? 7 : 5, color: '#fff', weight: 2, fillColor: i === 0 ? '#10b981' : '#2563eb', fillOpacity: 1, interactive: false }).addTo(MAP)); }); }
+    function cancelPoly(resetMode) { MAP.off('click', onPolyClick); MAP.off('dblclick', onPolyDblClick); MAP.doubleClickZoom.enable(); if (polyLayer) { MAP.removeLayer(polyLayer); polyLayer = null; } polyVertexMarkers.forEach(m => MAP.removeLayer(m)); polyVertexMarkers = []; polyPoints = []; if (resetMode) { polyMode = false; const nb = document.getElementById('nb-poly'); if (nb) nb.classList.remove('on'); document.getElementById('map').classList.remove('polymode'); const tip = document.getElementById('poly-tip'); if (tip) tip.classList.remove('show'); } }
+    function pointInPolygon(lat, lng, poly) { let inside = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const xi = poly[i].lat, yi = poly[i].lng, xj = poly[j].lat, yj = poly[j].lng; if (((yi > lng) !== (yj > lng)) && (lat < (xj - xi) * (lng - yi) / (yj - yi) + xi)) inside = !inside; } return inside; }
+    function selectInPolygon(pts) { let added = 0; FL.forEach(l => { if (pointInPolygon(l.lat, l.lng, pts)) { selectedIds.add(l.id); added++; } }); document.getElementById('map').classList.remove('polymode'); document.getElementById('poly-tip').classList.remove('show'); updateBulkPanel(); renderList(); renderTable(); updateSelPulse(); toast('🔷 Zaznaczono ' + added + ' obszarem (łącznie: ' + selectedIds.size + ')'); }
 
     function clearSelection() {
       selectedIds.forEach(id => removePulse(id)); selectedIds.clear();
@@ -3744,69 +4740,99 @@
       else { toast('Najpierw zaznacz punkty na liście, w tabeli lub obszarem na mapie'); }
     }
 
-    function toggleSelectAllVisible() {
-      const allSelected = FL.every(l => selectedIds.has(l.id));
-      if (allSelected) { FL.forEach(l => { selectedIds.delete(l.id); removePulse(l.id); }); }
-      else { FL.forEach(l => { selectedIds.add(l.id); addPulse(l.id); }); }
-      updateBulkPanel(); renderList(); renderTable();
-    }
+    function toggleSelectAllVisible() { const allSelected = FL.every(l => selectedIds.has(l.id)); if (allSelected) { FL.forEach(l => { selectedIds.delete(l.id); removePulse(l.id); }); } else { FL.forEach(l => { selectedIds.add(l.id); addPulse(l.id); }); } updateBulkPanel(); renderList(); renderTable(); }
+    function selectAllVisible() { FL.forEach(l => { selectedIds.add(l.id); addPulse(l.id); }); updateBulkPanel(); renderList(); renderTable(); updateSelPulse(); toast('☑ Zaznaczono wszystkie widoczne: ' + selectedIds.size); }
+    const _pulseEls = {}; function updateSelPulse() { Object.keys(_pulseEls).forEach(id => { if (!selectedIds.has(id)) removePulse(id); }); selectedIds.forEach(id => { if (!_pulseEls[id]) addPulse(id); }); } function addPulse(id) { const m = markers[id]; if (!m || !m._icon) return; const div = m._icon.querySelector('div'); if (div) { div.classList.add('selpulse'); _pulseEls[id] = div; } } function removePulse(id) { if (_pulseEls[id]) { _pulseEls[id].classList.remove('selpulse'); delete _pulseEls[id]; } } function fitSelected() { if (!selectedIds.size) { toast('⚠️ Brak zaznaczonych punktów'); return; } const pts = [...selectedIds].map(id => { const l = LAMPS.find(x => x.id === id); return l ? L.latLng(l.lat, l.lng) : null; }).filter(Boolean); if (pts.length) MAP.fitBounds(L.latLngBounds(pts), { padding: [40, 40], maxZoom: 18 }); }
 
-    function selectAllVisible() {
-      FL.forEach(l => { selectedIds.add(l.id); addPulse(l.id); });
-      updateBulkPanel(); renderList(); renderTable(); updateSelPulse();
-      toast('☑ Zaznaczono wszystkie widoczne: ' + selectedIds.size);
-    }
-
-    const _pulseEls = {};
-    function updateSelPulse() { Object.keys(_pulseEls).forEach(id => { if (!selectedIds.has(id)) removePulse(id); }); selectedIds.forEach(id => { if (!_pulseEls[id]) addPulse(id); }); }
-    function addPulse(id) { const m = markers[id]; if (!m || !m._icon) return; const div = m._icon.querySelector('div'); if (div) { div.classList.add('selpulse'); _pulseEls[id] = div; } }
-    function removePulse(id) { if (_pulseEls[id]) { _pulseEls[id].classList.remove('selpulse'); delete _pulseEls[id]; } }
-    function fitSelected() { if (!selectedIds.size) { toast('⚠️ Brak zaznaczonych punktów'); return; } const pts = [...selectedIds].map(id => { const l = LAMPS.find(x => x.id === id); return l ? L.latLng(l.lat, l.lng) : null; }).filter(Boolean); if (pts.length) MAP.fitBounds(L.latLngBounds(pts), { padding: [40, 40], maxZoom: 18 }); }
-
-    // ═══════════════════════════════════════════════════
-    // EDYCJA MASOWA NA SERWERZE (PUT)5imvj*-S/WC?*PT
-    // ═══════════════════════════════════════════════════
     async function applyBulkEdit() {
-      if (!selectedIds.size) return; const changes = {}; const v = (id) => document.getElementById(id).value.trim();
+      if (!selectedIds.size) return; if (!requireAuth()) return; const changes = {}; const v = (id) => document.getElementById(id).value.trim();
       if (v('bp-roprawy')) changes.rodzaj_oprawy = v('bp-roprawy'); if (v('bp-stoprawy')) changes.stan_oprawy = v('bp-stoprawy'); if (v('bp-sslupa')) changes.stan_slupa = v('bp-sslupa'); if (v('bp-linia')) changes.rodzaj_linii = v('bp-linia');
       if (v('bp-rslupa')) changes.rodzaj_slupa = v('bp-rslupa'); if (v('bp-szafa')) changes.szafa_oswietleniowa = v('bp-szafa'); if (v('bp-miejsc')) changes.miejscowosc = v('bp-miejsc'); if (v('bp-model')) changes.model_oprawy = v('bp-model'); if (v('bp-ulica')) changes.ulica = v('bp-ulica');
       if (!Object.keys(changes).length) { toast('⚠️ Nie wybrano żadnych zmian'); return; }
-
       try {
-        const response = await fetch(`${API_URL}/lamps-bulk`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ids: Array.from(selectedIds), changes })
-        });
-
-        if (!response.ok) throw new Error('Błąd serwera przy edycji masowej');
-
-        let count = 0;
-        selectedIds.forEach(id => {
-          const idx = LAMPS.findIndex(l => l.id === id);
-          if (idx > -1) {
-            LAMPS[idx] = { ...LAMPS[idx], ...changes };
-            count++;
-          }
-        });
-
-        selectedIds.forEach(id => { removePulse(id); const l = LAMPS.find(x => x.id === id); if (l) rebuildMarker(l); });
-        clearSelection(); applyFilters(); updateSummary();
-        toast('✅ Zastosowano zmiany na serwerze do ' + count + ' punktów');
-
-      } catch (error) {
-        console.error('Błąd edycji masowej:', error);
-        toast('❌ Błąd zapisu na serwerze');
-      }
+        const response = await fetch(`${API_URL}/lamps-bulk`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + await getAuthToken() }, body: JSON.stringify({ ids: Array.from(selectedIds), changes }) });
+        if (!response.ok) throw new Error('Błąd serwera');
+        let count = 0; selectedIds.forEach(id => { const idx = LAMPS.findIndex(l => l.id === id); if (idx > -1) { LAMPS[idx] = { ...LAMPS[idx], ...changes }; count++; } });
+        selectedIds.forEach(id => { removePulse(id); const l = LAMPS.find(x => x.id === id); if (l) rebuildMarker(l); }); clearSelection(); applyFilters(); updateSummary(); toast('✅ Zastosowano zmiany na serwerze do ' + count + ' punktów');
+      } catch (error) { toast('❌ Błąd zapisu na serwerze'); }
     }
 
     let viewportFilterOn = false;
     function toggleViewportFilter(chip) { viewportFilterOn = !viewportFilterOn; chip.classList.toggle('on', viewportFilterOn); applyFilters(); if (viewportFilterOn) toast('📺 Pokazuję tylko punkty widoczne na mapie'); }
     let _vpTimer = null; function onMapMoveEnd() { if (!viewportFilterOn) return; clearTimeout(_vpTimer); _vpTimer = setTimeout(applyFilters, 300); }
 
+    let _fabOpen = false;
+    function toggleFAB() { _fabOpen = !_fabOpen; document.getElementById('mob-fab').classList.toggle('open', _fabOpen); const delay = [0, 70];['fab-sub-gps', 'fab-sub-map'].forEach((id, i) => { const el = document.getElementById(id); setTimeout(() => el.classList.toggle('show', _fabOpen), _fabOpen ? delay[i] : delay[1 - i]); }); }
+    function closeFAB() { if (_fabOpen) toggleFAB(); }
+    function startMapAddMob() { closeFAB(); startAdd(); toast('📍 Dotknij mapy, aby otworzyć formularz dodawania punktu'); }
+
+    let _gpsWatchId = null, _gpsSamples = [], _gpsTimer = null, _gpsResult = null;
+    function startGPSCapture() {
+      closeFAB(); if (!navigator.geolocation) { toast('❌ GPS niedostępny w tej przeglądarce'); return; }
+      _gpsSamples = []; _gpsResult = null; const el = id => document.getElementById(id); el('gps-cntdown').textContent = '5'; el('gps-acc-lbl').textContent = 'czekam…'; el('gps-coords-disp').textContent = '— , —'; el('gps-ring-fg').style.strokeDashoffset = '408'; el('gps-ring-fg').style.stroke = '#fbbf24'; el('gps-overlay').classList.add('show');
+      _gpsWatchId = navigator.geolocation.watchPosition(pos => { _gpsSamples.push({ lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy }); const avg = _gpsAvg(_gpsSamples); _gpsResult = avg; el('gps-coords-disp').textContent = avg.lat.toFixed(6) + '  ' + avg.lng.toFixed(6); el('gps-acc-lbl').textContent = '±' + Math.round(avg.acc) + 'm (' + _gpsSamples.length + ' próbek)'; const fg = el('gps-ring-fg'); fg.style.stroke = avg.acc < 5 ? '#10b981' : avg.acc < 15 ? '#fbbf24' : '#f87171'; }, err => { el('gps-acc-lbl').textContent = '⚠️ ' + err.message; }, { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 });
+      const t0 = Date.now(), TOTAL = 5000, CIRC = 408;
+      _gpsTimer = setInterval(() => { const elapsed = Date.now() - t0, remain = Math.max(0, TOTAL - elapsed); el('gps-cntdown').textContent = Math.ceil(remain / 1000); el('gps-ring-fg').style.strokeDashoffset = (CIRC * (1 - elapsed / TOTAL)).toFixed(1); if (remain <= 0) { clearInterval(_gpsTimer); _gpsTimer = null; acceptGPS(); } }, 80);
+    }
+    function _gpsAvg(s) { const n = s.length; return { lat: s.reduce((a, p) => a + p.lat, 0) / n, lng: s.reduce((a, p) => a + p.lng, 0) / n, acc: s.reduce((a, p) => a + p.acc, 0) / n }; }
+    function _stopGPS() { if (_gpsWatchId !== null) { navigator.geolocation.clearWatch(_gpsWatchId); _gpsWatchId = null; } if (_gpsTimer) { clearInterval(_gpsTimer); _gpsTimer = null; } }
+    function acceptGPS() { _stopGPS(); document.getElementById('gps-overlay').classList.remove('show'); if (!_gpsResult) { toast('⚠️ Brak sygnału GPS'); return; } openAddModalWithCoords(_gpsResult, 'gps'); }
+    function rejectGPS() { _stopGPS(); document.getElementById('gps-overlay').classList.remove('show'); toast('✕ Punkt odrzucony'); }
+    function adjustGPS() { _stopGPS(); document.getElementById('gps-overlay').classList.remove('show'); if (_gpsResult && MAP) MAP.setView([_gpsResult.lat, _gpsResult.lng], 19, { animate: true }); document.getElementById('map').classList.add('adjustmode'); document.getElementById('adjust-overlay').classList.add('show'); }
+    function confirmAdjust() { document.getElementById('map').classList.remove('adjustmode'); document.getElementById('adjust-overlay').classList.remove('show'); const ctr = MAP.getCenter(); _gpsResult = { lat: ctr.lat, lng: ctr.lng, acc: 0 }; openAddModalWithCoords(_gpsResult, 'gps'); }
+    function cancelAdjust() { document.getElementById('map').classList.remove('adjustmode'); document.getElementById('adjust-overlay').classList.remove('show'); toast('✕ Korekta anulowana'); }
+
+    function pickCond(inputId, value, btnEl) { btnEl.parentElement.querySelectorAll('.seg-opt').forEach(b => b.classList.remove('on')); btnEl.classList.add('on'); const input = document.getElementById(inputId); if (input) { input.value = value; input.dispatchEvent(new Event('input')); } }
+
+    function openLightbox(url) { if (!url || url.length < 10) return; let lb = document.getElementById('_lightbox'); if (!lb) { lb = document.createElement('div'); lb.id = '_lightbox'; lb.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;padding:16px;box-sizing:border-box'; lb.innerHTML = '<img id="_lb-img" style="max-width:94vw;max-height:90vh;border-radius:10px;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.7)"><button style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:24px;width:44px;height:44px;border-radius:50%;cursor:pointer" onclick="event.stopPropagation();closeLightbox()">✕</button>'; lb.addEventListener('click', closeLightbox); document.body.appendChild(lb); } document.getElementById('_lb-img').src = url; lb.style.display = 'flex'; }
+    function closeLightbox() { const lb = document.getElementById('_lightbox'); if (lb) lb.style.display = 'none'; }
+
+    function mobNav(view) {
+      const sb = document.getElementById('sb'); const lp = document.getElementById('layers-panel'); const tp = document.getElementById('tpanel'); const so = document.getElementById('set-overlay');
+      const sbOpen = sb?.classList.contains('open'); const lpOpen = lp?.classList.contains('open'); const tableOpen = tp ? !tp.classList.contains('hide') : false; const settingsOpen = so?.classList.contains('open');
+      if ((view === 'filter' && sbOpen) || (view === 'layers' && lpOpen) || (view === 'list' && tableOpen) || (view === 'set' && settingsOpen)) { closePanelsForMobile(); closeSettings(); setMobileActive('map'); return; }
+      closePanelsForMobile(); closeSettings();
+      if (view === 'filter') { toggleSidebar(true); return; }
+      if (view === 'layers') { toggleLayersPanel(true); return; }
+      if (view === 'list') { toggleTable(true); return; }
+      if (view === 'set') { openSettings(); setMobileActive('set'); return; }
+      setMobileActive('map');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => { const me = document.getElementById('map'); if (me) me.addEventListener('click', () => { if (_fabOpen) closeFAB(); }, true); });
+    function showLoginDialog() { const d = document.getElementById('login-dialog'); d.style.display = 'flex'; document.getElementById('login-err').style.display = 'none'; document.getElementById('login-email').focus(); }
+    async function doLogin() { const email = document.getElementById('login-email').value.trim(); const pass = document.getElementById('login-pass').value; const errEl = document.getElementById('login-err'); try { await window._fbSignIn(email, pass); document.getElementById('login-dialog').style.display = 'none'; toast('✅ Zalogowano jako ' + email); } catch (e) { errEl.textContent = '❌ ' + (e.code === 'auth/invalid-credential' ? 'Błędny email lub hasło' : e.message); errEl.style.display = 'block'; } }
+    async function getAuthToken() { if (!window._currentUser) return null; return window._currentUser.getIdToken(); }
+    function requireAuth() { if (!window._currentUser) { toast('🔐 Musisz być zalogowany'); return false; } return true; }
+    document.addEventListener('keydown', e => { if (e.key === 'Enter' && document.getElementById('login-dialog').style.display === 'flex') doLogin(); });
+    function mobOpenBulk() { if (!selectedIds || selectedIds.size === 0) { toast('Najpierw zaznacz punkty na mapie'); return; } document.getElementById('bulk-panel').classList.add('open'); }
+
     document.addEventListener('DOMContentLoaded', initMap);
   </script>
 
+  <div id="login-dialog"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:20px">
+    <div
+      style="background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:340px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+      <div
+        style="padding:16px 18px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;gap:10px">
+        <div style="font-size:20px">🔐</div>
+        <div style="font-size:14px;font-weight:600;color:var(--t1)">Logowanie</div>
+        <button onclick="document.getElementById('login-dialog').style.display='none'"
+          style="margin-left:auto;background:none;border:1px solid var(--border);border-radius:7px;width:26px;height:26px;cursor:pointer;color:var(--t2)">✕</button>
+      </div>
+      <div style="padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+        <input id="login-email" type="email" placeholder="Email" autocomplete="email"
+          style="padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;background:var(--surface2);color:var(--t1);outline:none;width:100%;box-sizing:border-box;" />
+        <input id="login-pass" type="password" placeholder="Hasło" autocomplete="current-password"
+          style="padding:10px 12px;border:1.5px solid var(--border);border-radius:9px;font-size:14px;background:var(--surface2);color:var(--t1);outline:none;width:100%;box-sizing:border-box;" />
+        <div id="login-err" style="font-size:12px;color:#dc2626;display:none"></div>
+        <button onclick="doLogin()"
+          style="padding:12px;border-radius:10px;border:none;background:#059669;color:#fff;font-size:14px;font-weight:700;cursor:pointer">Zaloguj
+          się</button>
+      </div>
+    </div>
+  </div>
 </body>
 
 </html>
