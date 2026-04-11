@@ -2,7 +2,21 @@ require('dotenv').config() // Ładuje Twoje hasło z pliku .env
 const express = require('express')
 const cors = require('cors')
 const { Pool } = require('pg')
+const admin = require('firebase-admin')
+const serviceAccount = require('./serviceAccountKey.json')
+admin.initializeApp({ credential: admin.credential.cert(serviceAccount) })
 
+// Middleware weryfikacji tokenu
+async function verifyToken(req, res, next) {
+	const auth = req.headers.authorization
+	if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ error: 'Brak tokenu' })
+	try {
+		req.user = await admin.auth().verifyIdToken(auth.slice(7))
+		next()
+	} catch (e) {
+		res.status(403).json({ error: 'Nieprawidłowy token' })
+	}
+}
 const app = express()
 const PORT = 3000
 
@@ -26,7 +40,7 @@ app.get('/api/lamps', async (req, res) => {
 })
 
 // 2. TWORZENIE (Nowy punkt z mapy)
-app.post('/api/lamps', async (req, res) => {
+app.post('/api/lamps', verifyToken, async (req, res) => {
 	const d = req.body
 	try {
 		const query = `
@@ -64,7 +78,7 @@ app.post('/api/lamps', async (req, res) => {
 	}
 })
 // 3. EDYCJA JEDNEJ LAMPY
-app.put('/api/lamps/:id', async (req, res) => {
+app.put('/api/lamps/:id', verifyToken, async (req, res) => {
 	const id = req.params.id
 	const d = req.body
 	try {
@@ -111,7 +125,7 @@ app.put('/api/lamps/:id', async (req, res) => {
 })
 
 // 4. EDYCJA MASOWA ZAZNACZONYCH (Wiele lamp naraz)
-app.put('/api/lamps-bulk', async (req, res) => {
+app.put('/api/lamps-bulk', verifyToken, async (req, res) => {
 	const { ids, changes } = req.body
 	try {
 		const keys = Object.keys(changes)
@@ -135,7 +149,7 @@ app.put('/api/lamps-bulk', async (req, res) => {
 })
 
 // 5. USUWANIE LAMPY
-app.delete('/api/lamps/:id', async (req, res) => {
+app.delete('/api/lamps/:id', verifyToken, async (req, res) => {
 	const id = req.params.id
 	try {
 		// Sprytne usunięcie - jeśli lampy nie było w bazie, nie wyrzuci błędu.
